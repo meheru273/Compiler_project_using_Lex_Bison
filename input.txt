@@ -1,0 +1,67 @@
+function @func_name LP RP
+{
+    int prince_aa cm prince_bb cm prince_cc cm prince_aa cm prince_b cm prince_bb cm prince_cnt cm prince_cntt $$
+    prince_cc = 7 $$
+    prince_b = 8 $$
+    prince_aad = 9 $$
+
+    prince_b * 4 $$
+    40 - 15 + 8 - 3 $$ 
+    10 / 3 $$
+    
+    IF LP 5 + 3 - 8 RP
+    {
+        prince_cntt = 12 $$ $$
+    }
+    
+    IF LP 5 + 8 RP
+    {
+        IF LP 7 < 5 RP
+        {
+            2 + 7 + 6 $$ $$
+        }
+        ELSE
+        {
+            6 + 8 + 4 + 2 $$ $$
+        } $$
+    }
+
+    IF LP 7 < 5 RP
+    {
+        2 + 7 + 6 $$ $$
+    }
+    ELSE
+    {
+        6 + 8 / 4 + 2 * 3 - 1 $$ $$
+    }
+    
+    IF LP 7 > 5 RP
+    {
+        2 + 7 + 6 * 2 - 18 / 3 $$ $$
+    }
+    ELSE
+    {
+        6 + 8 / 4 + 2 * 3 - 1 $$ $$
+    }
+    
+    FOR LP 2 : 6 RP { 4 + 2 $$ }
+
+    WHILE LP 0 > 5 RP { 4 + 2 $$ }
+    
+    prince_cnt = 7 $$
+    
+    select LP prince_cnt RP 
+    { 
+        CASE 1 : 4 + 2 $$ 
+        CASE 2 : 3 + 2 $$ 
+        default : 2 $$ 
+    }
+
+    // we try to skip this   
+    /m/Bangladesh is a beautiful
+    country
+    /m/
+
+    SHOWOUT LP prince_cnt RP $$
+    ~++ prince_b ~++ $$    
+}
