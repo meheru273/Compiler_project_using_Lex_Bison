@@ -1,120 +1,76 @@
-/* author: shakib1507034 */
-
 %{
-	#include<stdio.h>
-	#include <string.h>
-	#include "cat.tab.h"
-	#include<stdlib.h>
-    void yyerror(const char *s);
-    int yyparse(void);
-
-	int _user_function=0,keyword=0,_identifiers=0,_arithmatic_operator=0,_unary_operator=0,_logical_operator=0,_relational_operator=0,_assignment_operator=0,_library_function=0,_datatype=0,_loop=0,cndstatement=0,_integer=0,floatnum=0,_string=0,scmnt=0,mcmnt=0,newl=0;
-
+#include <stdio.h>
+#include <string.h>
+#include "cat.tab.h"
+extern char *strdup(const char *s);  
+int line_number = 1;
+extern FILE* yyin;
 %}
 
-Datatype "int"|"float" 
-identifiers "prince_"[a-zA-Z]([a-zA-Z0-9])*
-arithmatic_operator "jog"|"biyog"|"goon"|"bag"|"exp"
-unary_operator "~++"|"~--"|"~~"|"~!"|"~+"|"~-"
-logical_operator [&][&]|[|][|]|[!][!]
-relational_operator "<<"|">>"|"<<="|">>="|"=="|"!="
-assignment_operator [=]|"+="|"-="|"/="
-import "import "[a-zA-Z]([a-zA-Z0-9])*
-library_function "TAKEIN<"|"SHOWOUT>"
-user_function "function"
-conditional_statement "IF"|"ELSE"|"ELIF"|"WHILE"
-integer (-|\+)?[0-9]+
-float [+-]?[0-9]+[.][0-9]+|[+-]?[.][0-9]+|[1-9]+e[+-][0-9]+
-single_line_comment [/][/].*
-multiple_line_comment [ ]*[/][m][/][a-zA-Z0-9!@#*(){}_+-,.:\|?><\n\t ]*[/][m][/]
 
-/*RE and Action*/
+
+
+%option yylineno
 
 %%
-"inout"   {return inpit;}
-"import"  {return importtt;}
+"import"        { printf("LEX: Found IMPORT\n"); return IMPORT; }
+"function"      { printf("LEX: Found FUNCTION\n"); return FUNCTION; }
+"return"        { printf("LEX: Found RETURN\n"); return RETURN; }
+"main"          { printf("LEX: Found MAIN\n"); return MAIN; }
+"IF"            { printf("LEX: Found IF\n"); return IF; }
+"ELSE"          { printf("LEX: Found ELSE\n"); return ELSE; }
+"ELIF"          { printf("LEX: Found ELIF\n"); return ELIF; }
+"EXERT>"        { printf("LEX: Found EXERT_OUT\n"); return EXERT_OUT; }
+"int"           { printf("LEX: Found INT\n"); return INT; }
+"float"         { printf("LEX: Found FLOAT\n"); return FLOAT; }
 
-{single_line_comment} {
-printf("single line comment\n");
-scmnt++;
+"+"             { printf("LEX: Found PLUS\n"); return PLUS; }
+"-"             { printf("LEX: Found MINUS\n"); return MINUS; }
+"*"             { printf("LEX: Found MULT\n"); return MULT; }
+"/"             { printf("LEX: Found DIV\n"); return DIV; }
+">"             { printf("LEX: Found GT\n"); return GT; }
+"<"             { printf("LEX: Found LT\n"); return LT; }
+"="             { printf("LEX: Found ASSIGN\n"); return ASSIGN; }
+
+"("             { printf("LEX: Found LPAREN\n"); return LPAREN; }
+")"             { printf("LEX: Found RPAREN\n"); return RPAREN; }
+"{"             { printf("LEX: Found LBRACE\n"); return LBRACE; }
+"}"             { printf("LEX: Found RBRACE\n"); return RBRACE; }
+";"             { printf("LEX: Found SEMICOLON\n"); return SEMICOLON; }
+"$$"            { printf("LEX: Found END_MARKER\n"); return END_MARKER; }
+
+@[a-zA-Z][a-zA-Z0-9_]*  { 
+    printf("LEX: Found FUNC_ID: %s\n", yytext);
+    yylval.string = strdup(yytext);
+    return FUNC_ID;
 }
-{multiple_line_comment} {
-mcmnt++;
-printf("multiple_line_comment\n");
+
+[a-zA-Z][a-zA-Z0-9_]*   { 
+    printf("LEX: Found ID: %s\n", yytext);
+    yylval.string = strdup(yytext);
+    return ID;
 }
-"SHOWOUT"  return SHOWOUT;
-"~++"    {_unary_operator++;return inc;}
-"{"	 {
-keyword++ ;
 
-return LB; }
-"}"	  { 
-keyword++ ;
-return RB; }
-"colon"   {keyword++ ;return COLON;}
-"BREAK"    {  keyword++ ;  return BREAK;     }
-"CASE"      { keyword++ ;return CASE;      }
-"select"      { keyword++ ;return SWITCH;}
-"default"     {  keyword++ ;return DEFAULT;}
-"WHILE"  {keyword++ ;_loop++;return WHILE;}
-"int"	{ keyword++ ;_datatype++;return INT; }
-"float"	{ keyword++ ;_datatype++;return FLOAT; }
-"char"	{ keyword++ ;_datatype++;return CHAR; }
-":"     {keyword++ ;return COL;}
-[0-9]+	{ 
-		yylval.number = atoi(yytext);
-		return NUM;
-	}
-"FOR"   {keyword++ ;_loop++;return FOR;}  
-"LP"	{keyword++ ; return LP; }
-"RP"	{keyword++ ; return RP; }
-
-"cm"	{ keyword++ ;return CM; }
-"$$"	{ newl++;keyword++ ;return SM; }
-"jog"	{ keyword++ ;_arithmatic_operator++;
-return PLUS; 
+[0-9]+          { 
+    printf("LEX: Found NUMBER: %s\n", yytext);
+    yylval.number = atoi(yytext);
+    return NUMBER;
 }
-"biyog"	{ keyword++ ;_arithmatic_operator++;
-return MINUS; }
-"goon"	{ keyword++ ;_arithmatic_operator++;
-return MULT; }
-"bag"	{ keyword++ ;_arithmatic_operator++;
-return DIV; }
-"="	{ _relational_operator++;_assignment_operator++;keyword++;return ASSIGN;  }
-">>"	{_relational_operator++; keyword++ ;return GT; }
-"<<"	{ _relational_operator++;keyword++ ;return LT; }
 
-[a-z_]+  {
-	_identifiers++;
-	 yylval.string=strdup(yytext);return VAR;
-	}
-
-"IF"		{ cndstatement++;keyword++ ;return IF;}
-"ELSE"		{ cndstatement++;keyword++ ;return ELSE;}
-
-"function @func_name"	{ keyword++ ;return VOIDMAIN; }
-
-[ \t\n]*	
-
-. {
-	yyerror("Unknown Character.\n");
+[0-9]+\.[0-9]+  { 
+    printf("LEX: Found FLOAT_NUM: %s\n", yytext);
+    yylval.float_val = atof(yytext);
+    return FLOAT_NUM;
 }
+
+"[%]"[^\n]*     { printf("LEX: Found comment\n"); }  /* Skip comments */
+[ \t]           ;  /* Skip whitespace */
+\n              ;  /* Skip newlines */
+.               { printf("LEX: Unexpected character: %s\n", yytext); }
+
 %%
 
-/* user subroutines */
-
-int main(int argc, char **argv) {
-    if (argc > 1) {
-        yyin = fopen(argv[1], "r"); // Open input file
-        if (!yyin) {
-            perror("Error opening input file");
-            return 1;
-        }
-    } else {
-        yyin = stdin; // Default to standard input
-    }
-
-    yyparse(); // Start parsing
-    return 0;
+int yywrap(void) {
+    return 1;
 }
 

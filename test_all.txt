@@ -1,0 +1,71 @@
+import math;
+
+[%] Testing function definition and parameters
+function @add(int x) {
+    return x + 10;
+}
+
+[%] Testing main function with various features
+function main() {
+    [%] Variable declarations and initializations
+    int x = 10;
+    float y = 20.0;
+    
+    [%] Testing arithmetic operations
+    x = x + 5;
+    y = y - 3.0;
+    int z = x * 2;
+    
+    [%] Testing function calls
+    int result = @add(x);
+    
+    [%] Testing IF-ELSE statements
+    IF (x > 10) {
+        EXERT> (x);
+    } ELSE {
+        EXERT> (y);
+    }
+    
+    [%] Testing ELIF
+    IF (x < 5) {
+        EXERT> (1);
+    } ELIF (x < 15) {
+        EXERT> (2);
+    } ELSE {
+        EXERT> (3);
+    }
+    
+    [%] Testing compound conditions
+    IF (x > 0 && y < 30.0) {
+        EXERT> (x + y);
+    }
+    
+    [%] Testing math functions
+    float sinVal = sin(x);
+    float cosVal = cos(x);
+    float sqrtVal = sqrt(x);
+    
+    [%] Testing increment/decrement
+    x++;
+    y--;
+    
+    [%] Testing compound assignments
+    x += 5;
+    y -= 2.0;
+    z *= 3;
+    
+    [%] Testing INSERT and EXERT
+    INSERT< (42);
+    EXERT> (result);
+    
+    [%] Testing bitwise operations
+    int bits = x ^ y;
+    
+    [%] Testing logical operations
+    IF (!!x || !!y) {
+        EXERT> (bits);
+    }
+}
+
+[%] End of program
+$$

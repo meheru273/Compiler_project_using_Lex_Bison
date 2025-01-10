@@ -1,0 +1,1283 @@
+Terminals unused in grammar
+
+   FLOATNUM
+   BREAK
+   importtt
+   inpit
+   EXERT
+   INC
+   DEC
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: VOIDMAIN LP RP LB cstatement RB
+
+    2 cstatement: /* empty */
+    3           | cstatement statement
+    4           | cdeclaration
+
+    5 cdeclaration: TYPE ID1 SM
+    6             | IMPORT IDENTIFIER SM
+
+    7 TYPE: INT
+    8     | FLOAT
+    9     | CHAR
+
+   10 ID1: ID1 CM VAR
+   11    | VAR
+
+   12 statement: SM
+   13          | SWITCH LP expression_switch RP LB BASE RB
+   14          | expression SM
+   15          | VAR ASSIGN expression SM
+   16          | IF LP expression RP statement ELSE statement
+   17          | IF LP expression RP statement
+   18          | FOR LP expression COL expression RP LB statement RB
+   19          | WHILE LP expression RP LB statement RB
+
+   20 expression: NUM
+   21           | VAR
+   22           | expression PLUS expression
+   23           | expression MINUS expression
+   24           | expression MULT expression
+   25           | expression DIV expression
+   26           | expression EQ expression
+   27           | expression NE expression
+   28           | expression GT expression
+   29           | expression LT expression
+   30           | expression GE expression
+   31           | expression LE expression
+   32           | LP expression RP
+
+   33 expression_switch: NUM
+   34                  | VAR
+
+   35 BASE: Bas
+   36     | Bas Dflt
+
+   37 Bas: /* empty */
+   38    | Bas Cs
+
+   39 Cs: CASE NUM COL statement
+
+   40 Dflt: DEFAULT COLON statement
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+NUM (258) 20 33 39
+FLOATNUM (259)
+VAR (260) 10 11 15 21 34
+IDENTIFIER (261) 6
+IF (262) 16 17
+ELSE (263) 16
+VOIDMAIN (264) 1
+INT (265) 7
+FLOAT (266) 8
+CHAR (267) 9
+LP (268) 1 13 16 17 18 19 32
+RP (269) 1 13 16 17 18 19 32
+LB (270) 1 13 18 19
+RB (271) 1 13 18 19
+CM (272) 10
+SM (273) 5 6 12 14 15
+PLUS (274) 22
+MINUS (275) 23
+MULT (276) 24
+DIV (277) 25
+ASSIGN (278) 15
+FOR (279) 18
+COL (280) 18 39
+WHILE (281) 19
+BREAK (282)
+COLON (283) 40
+DEFAULT (284) 40
+CASE (285) 39
+SWITCH (286) 13
+importtt (287)
+inpit (288)
+IMPORT (289) 6
+EXERT (290)
+INC (291)
+DEC (292)
+EQ (293) 26
+NE (294) 27
+GT (295) 28
+LT (296) 29
+GE (297) 30
+LE (298) 31
+IFX (299)
+
+
+Nonterminals, with rules where they appear
+
+$accept (45)
+    on left: 0
+program (46)
+    on left: 1, on right: 0
+cstatement (47)
+    on left: 2 3 4, on right: 1 3
+cdeclaration (48)
+    on left: 5 6, on right: 4
+TYPE (49)
+    on left: 7 8 9, on right: 5
+ID1 (50)
+    on left: 10 11, on right: 5 10
+statement (51)
+    on left: 12 13 14 15 16 17 18 19, on right: 3 16 17 18 19 39 40
+expression (52)
+    on left: 20 21 22 23 24 25 26 27 28 29 30 31 32, on right: 14 15
+    16 17 18 19 22 23 24 25 26 27 28 29 30 31 32
+expression_switch (53)
+    on left: 33 34, on right: 13
+BASE (54)
+    on left: 35 36, on right: 13
+Bas (55)
+    on left: 37 38, on right: 35 36 38
+Cs (56)
+    on left: 39, on right: 38
+Dflt (57)
+    on left: 40, on right: 36
+
+
+state 0
+
+    0 $accept: . program $end
+
+    VOIDMAIN  shift, and go to state 1
+
+    program  go to state 2
+
+
+state 1
+
+    1 program: VOIDMAIN . LP RP LB cstatement RB
+
+    LP  shift, and go to state 3
+
+
+state 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 4
+
+
+state 3
+
+    1 program: VOIDMAIN LP . RP LB cstatement RB
+
+    RP  shift, and go to state 5
+
+
+state 4
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 5
+
+    1 program: VOIDMAIN LP RP . LB cstatement RB
+
+    LB  shift, and go to state 6
+
+
+state 6
+
+    1 program: VOIDMAIN LP RP LB . cstatement RB
+
+    INT     shift, and go to state 7
+    FLOAT   shift, and go to state 8
+    CHAR    shift, and go to state 9
+    IMPORT  shift, and go to state 10
+
+    $default  reduce using rule 2 (cstatement)
+
+    cstatement    go to state 11
+    cdeclaration  go to state 12
+    TYPE          go to state 13
+
+
+state 7
+
+    7 TYPE: INT .
+
+    $default  reduce using rule 7 (TYPE)
+
+
+state 8
+
+    8 TYPE: FLOAT .
+
+    $default  reduce using rule 8 (TYPE)
+
+
+state 9
+
+    9 TYPE: CHAR .
+
+    $default  reduce using rule 9 (TYPE)
+
+
+state 10
+
+    6 cdeclaration: IMPORT . IDENTIFIER SM
+
+    IDENTIFIER  shift, and go to state 14
+
+
+state 11
+
+    1 program: VOIDMAIN LP RP LB cstatement . RB
+    3 cstatement: cstatement . statement
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    RB      shift, and go to state 19
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 24
+    expression  go to state 25
+
+
+state 12
+
+    4 cstatement: cdeclaration .
+
+    $default  reduce using rule 4 (cstatement)
+
+
+state 13
+
+    5 cdeclaration: TYPE . ID1 SM
+
+    VAR  shift, and go to state 26
+
+    ID1  go to state 27
+
+
+state 14
+
+    6 cdeclaration: IMPORT IDENTIFIER . SM
+
+    SM  shift, and go to state 28
+
+
+state 15
+
+   20 expression: NUM .
+
+    $default  reduce using rule 20 (expression)
+
+
+state 16
+
+   15 statement: VAR . ASSIGN expression SM
+   21 expression: VAR .
+
+    ASSIGN  shift, and go to state 29
+
+    $default  reduce using rule 21 (expression)
+
+
+state 17
+
+   16 statement: IF . LP expression RP statement ELSE statement
+   17          | IF . LP expression RP statement
+
+    LP  shift, and go to state 30
+
+
+state 18
+
+   32 expression: LP . expression RP
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 32
+
+
+state 19
+
+    1 program: VOIDMAIN LP RP LB cstatement RB .
+
+    $default  reduce using rule 1 (program)
+
+
+state 20
+
+   12 statement: SM .
+
+    $default  reduce using rule 12 (statement)
+
+
+state 21
+
+   18 statement: FOR . LP expression COL expression RP LB statement RB
+
+    LP  shift, and go to state 33
+
+
+state 22
+
+   19 statement: WHILE . LP expression RP LB statement RB
+
+    LP  shift, and go to state 34
+
+
+state 23
+
+   13 statement: SWITCH . LP expression_switch RP LB BASE RB
+
+    LP  shift, and go to state 35
+
+
+state 24
+
+    3 cstatement: cstatement statement .
+
+    $default  reduce using rule 3 (cstatement)
+
+
+state 25
+
+   14 statement: expression . SM
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    SM     shift, and go to state 36
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 26
+
+   11 ID1: VAR .
+
+    $default  reduce using rule 11 (ID1)
+
+
+state 27
+
+    5 cdeclaration: TYPE ID1 . SM
+   10 ID1: ID1 . CM VAR
+
+    CM  shift, and go to state 47
+    SM  shift, and go to state 48
+
+
+state 28
+
+    6 cdeclaration: IMPORT IDENTIFIER SM .
+
+    $default  reduce using rule 6 (cdeclaration)
+
+
+state 29
+
+   15 statement: VAR ASSIGN . expression SM
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 49
+
+
+state 30
+
+   16 statement: IF LP . expression RP statement ELSE statement
+   17          | IF LP . expression RP statement
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 50
+
+
+state 31
+
+   21 expression: VAR .
+
+    $default  reduce using rule 21 (expression)
+
+
+state 32
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+   32           | LP expression . RP
+
+    RP     shift, and go to state 51
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 33
+
+   18 statement: FOR LP . expression COL expression RP LB statement RB
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 52
+
+
+state 34
+
+   19 statement: WHILE LP . expression RP LB statement RB
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 53
+
+
+state 35
+
+   13 statement: SWITCH LP . expression_switch RP LB BASE RB
+
+    NUM  shift, and go to state 54
+    VAR  shift, and go to state 55
+
+    expression_switch  go to state 56
+
+
+state 36
+
+   14 statement: expression SM .
+
+    $default  reduce using rule 14 (statement)
+
+
+state 37
+
+   22 expression: expression PLUS . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 57
+
+
+state 38
+
+   23 expression: expression MINUS . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 58
+
+
+state 39
+
+   24 expression: expression MULT . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 59
+
+
+state 40
+
+   25 expression: expression DIV . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 60
+
+
+state 41
+
+   26 expression: expression EQ . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 61
+
+
+state 42
+
+   27 expression: expression NE . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 62
+
+
+state 43
+
+   28 expression: expression GT . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 63
+
+
+state 44
+
+   29 expression: expression LT . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 64
+
+
+state 45
+
+   30 expression: expression GE . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 65
+
+
+state 46
+
+   31 expression: expression LE . expression
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 66
+
+
+state 47
+
+   10 ID1: ID1 CM . VAR
+
+    VAR  shift, and go to state 67
+
+
+state 48
+
+    5 cdeclaration: TYPE ID1 SM .
+
+    $default  reduce using rule 5 (cdeclaration)
+
+
+state 49
+
+   15 statement: VAR ASSIGN expression . SM
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    SM     shift, and go to state 68
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 50
+
+   16 statement: IF LP expression . RP statement ELSE statement
+   17          | IF LP expression . RP statement
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    RP     shift, and go to state 69
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 51
+
+   32 expression: LP expression RP .
+
+    $default  reduce using rule 32 (expression)
+
+
+state 52
+
+   18 statement: FOR LP expression . COL expression RP LB statement RB
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    COL    shift, and go to state 70
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 53
+
+   19 statement: WHILE LP expression . RP LB statement RB
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    RP     shift, and go to state 71
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 54
+
+   33 expression_switch: NUM .
+
+    $default  reduce using rule 33 (expression_switch)
+
+
+state 55
+
+   34 expression_switch: VAR .
+
+    $default  reduce using rule 34 (expression_switch)
+
+
+state 56
+
+   13 statement: SWITCH LP expression_switch . RP LB BASE RB
+
+    RP  shift, and go to state 72
+
+
+state 57
+
+   22 expression: expression . PLUS expression
+   22           | expression PLUS expression .
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    MULT  shift, and go to state 39
+    DIV   shift, and go to state 40
+
+    $default  reduce using rule 22 (expression)
+
+
+state 58
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   23           | expression MINUS expression .
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    MULT  shift, and go to state 39
+    DIV   shift, and go to state 40
+
+    $default  reduce using rule 23 (expression)
+
+
+state 59
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   24           | expression MULT expression .
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    $default  reduce using rule 24 (expression)
+
+
+state 60
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   25           | expression DIV expression .
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    $default  reduce using rule 25 (expression)
+
+
+state 61
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   26           | expression EQ expression .
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+    $default  reduce using rule 26 (expression)
+
+
+state 62
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   27           | expression NE expression .
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+    $default  reduce using rule 27 (expression)
+
+
+state 63
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   28           | expression GT expression .
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+
+    $default  reduce using rule 28 (expression)
+
+
+state 64
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   29           | expression LT expression .
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+
+    $default  reduce using rule 29 (expression)
+
+
+state 65
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   30           | expression GE expression .
+   31           | expression . LE expression
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+
+    $default  reduce using rule 30 (expression)
+
+
+state 66
+
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+   31           | expression LE expression .
+
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+
+    $default  reduce using rule 31 (expression)
+
+
+state 67
+
+   10 ID1: ID1 CM VAR .
+
+    $default  reduce using rule 10 (ID1)
+
+
+state 68
+
+   15 statement: VAR ASSIGN expression SM .
+
+    $default  reduce using rule 15 (statement)
+
+
+state 69
+
+   16 statement: IF LP expression RP . statement ELSE statement
+   17          | IF LP expression RP . statement
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 73
+    expression  go to state 25
+
+
+state 70
+
+   18 statement: FOR LP expression COL . expression RP LB statement RB
+
+    NUM  shift, and go to state 15
+    VAR  shift, and go to state 31
+    LP   shift, and go to state 18
+
+    expression  go to state 74
+
+
+state 71
+
+   19 statement: WHILE LP expression RP . LB statement RB
+
+    LB  shift, and go to state 75
+
+
+state 72
+
+   13 statement: SWITCH LP expression_switch RP . LB BASE RB
+
+    LB  shift, and go to state 76
+
+
+state 73
+
+   16 statement: IF LP expression RP statement . ELSE statement
+   17          | IF LP expression RP statement .
+
+    ELSE  shift, and go to state 77
+
+    $default  reduce using rule 17 (statement)
+
+
+state 74
+
+   18 statement: FOR LP expression COL expression . RP LB statement RB
+   22 expression: expression . PLUS expression
+   23           | expression . MINUS expression
+   24           | expression . MULT expression
+   25           | expression . DIV expression
+   26           | expression . EQ expression
+   27           | expression . NE expression
+   28           | expression . GT expression
+   29           | expression . LT expression
+   30           | expression . GE expression
+   31           | expression . LE expression
+
+    RP     shift, and go to state 78
+    PLUS   shift, and go to state 37
+    MINUS  shift, and go to state 38
+    MULT   shift, and go to state 39
+    DIV    shift, and go to state 40
+    EQ     shift, and go to state 41
+    NE     shift, and go to state 42
+    GT     shift, and go to state 43
+    LT     shift, and go to state 44
+    GE     shift, and go to state 45
+    LE     shift, and go to state 46
+
+
+state 75
+
+   19 statement: WHILE LP expression RP LB . statement RB
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 79
+    expression  go to state 25
+
+
+state 76
+
+   13 statement: SWITCH LP expression_switch RP LB . BASE RB
+
+    $default  reduce using rule 37 (Bas)
+
+    BASE  go to state 80
+    Bas   go to state 81
+
+
+state 77
+
+   16 statement: IF LP expression RP statement ELSE . statement
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 82
+    expression  go to state 25
+
+
+state 78
+
+   18 statement: FOR LP expression COL expression RP . LB statement RB
+
+    LB  shift, and go to state 83
+
+
+state 79
+
+   19 statement: WHILE LP expression RP LB statement . RB
+
+    RB  shift, and go to state 84
+
+
+state 80
+
+   13 statement: SWITCH LP expression_switch RP LB BASE . RB
+
+    RB  shift, and go to state 85
+
+
+state 81
+
+   35 BASE: Bas .
+   36     | Bas . Dflt
+   38 Bas: Bas . Cs
+
+    DEFAULT  shift, and go to state 86
+    CASE     shift, and go to state 87
+
+    $default  reduce using rule 35 (BASE)
+
+    Cs    go to state 88
+    Dflt  go to state 89
+
+
+state 82
+
+   16 statement: IF LP expression RP statement ELSE statement .
+
+    $default  reduce using rule 16 (statement)
+
+
+state 83
+
+   18 statement: FOR LP expression COL expression RP LB . statement RB
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 90
+    expression  go to state 25
+
+
+state 84
+
+   19 statement: WHILE LP expression RP LB statement RB .
+
+    $default  reduce using rule 19 (statement)
+
+
+state 85
+
+   13 statement: SWITCH LP expression_switch RP LB BASE RB .
+
+    $default  reduce using rule 13 (statement)
+
+
+state 86
+
+   40 Dflt: DEFAULT . COLON statement
+
+    COLON  shift, and go to state 91
+
+
+state 87
+
+   39 Cs: CASE . NUM COL statement
+
+    NUM  shift, and go to state 92
+
+
+state 88
+
+   38 Bas: Bas Cs .
+
+    $default  reduce using rule 38 (Bas)
+
+
+state 89
+
+   36 BASE: Bas Dflt .
+
+    $default  reduce using rule 36 (BASE)
+
+
+state 90
+
+   18 statement: FOR LP expression COL expression RP LB statement . RB
+
+    RB  shift, and go to state 93
+
+
+state 91
+
+   40 Dflt: DEFAULT COLON . statement
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 94
+    expression  go to state 25
+
+
+state 92
+
+   39 Cs: CASE NUM . COL statement
+
+    COL  shift, and go to state 95
+
+
+state 93
+
+   18 statement: FOR LP expression COL expression RP LB statement RB .
+
+    $default  reduce using rule 18 (statement)
+
+
+state 94
+
+   40 Dflt: DEFAULT COLON statement .
+
+    $default  reduce using rule 40 (Dflt)
+
+
+state 95
+
+   39 Cs: CASE NUM COL . statement
+
+    NUM     shift, and go to state 15
+    VAR     shift, and go to state 16
+    IF      shift, and go to state 17
+    LP      shift, and go to state 18
+    SM      shift, and go to state 20
+    FOR     shift, and go to state 21
+    WHILE   shift, and go to state 22
+    SWITCH  shift, and go to state 23
+
+    statement   go to state 96
+    expression  go to state 25
+
+
+state 96
+
+   39 Cs: CASE NUM COL statement .
+
+    $default  reduce using rule 39 (Cs)

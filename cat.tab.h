@@ -39,40 +39,34 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     NUM = 258,
-     VAR = 259,
-     IF = 260,
-     ELSE = 261,
-     VOIDMAIN = 262,
-     INT = 263,
-     FLOAT = 264,
-     CHAR = 265,
-     LP = 266,
-     RP = 267,
-     LB = 268,
-     RB = 269,
-     CM = 270,
-     SM = 271,
-     PLUS = 272,
-     MINUS = 273,
-     MULT = 274,
-     DIV = 275,
-     ASSIGN = 276,
-     FOR = 277,
-     COL = 278,
-     WHILE = 279,
-     BREAK = 280,
-     COLON = 281,
-     DEFAULT = 282,
-     CASE = 283,
-     SWITCH = 284,
-     inc = 285,
-     importtt = 286,
-     inpit = 287,
-     SHOWOUT = 288,
-     IFX = 289,
-     GT = 290,
-     LT = 291
+     ID = 258,
+     FUNC_ID = 259,
+     NUMBER = 260,
+     FLOAT_NUM = 261,
+     IMPORT = 262,
+     FUNCTION = 263,
+     MAIN = 264,
+     RETURN = 265,
+     IF = 266,
+     ELSE = 267,
+     ELIF = 268,
+     EXERT_OUT = 269,
+     INT = 270,
+     FLOAT = 271,
+     LPAREN = 272,
+     RPAREN = 273,
+     LBRACE = 274,
+     RBRACE = 275,
+     SEMICOLON = 276,
+     ASSIGN = 277,
+     PLUS = 278,
+     MINUS = 279,
+     MULT = 280,
+     DIV = 281,
+     GT = 282,
+     LT = 283,
+     END_MARKER = 284,
+     UMINUS = 285
    };
 #endif
 
@@ -83,15 +77,16 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 26 "cat.y"
+#line 14 "cat.y"
 
     int number;
+    float float_val;
     char *string;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 95 "cat.tab.h"
+#line 90 "cat.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

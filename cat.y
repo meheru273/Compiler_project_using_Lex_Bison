@@ -1,217 +1,217 @@
 %{
-    #include<stdio.h>
-    #include<string.h>
-    #include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 
-    void yyerror(const char *s);  
-    int yylex(void);             
-    int number_for_key(char *key);  
-    int number_for_key2(char *key);
-
-    int cnt = 1, cntt = 0, val;
-    typedef struct entry {
-        char *str;
-        int n;
-    } dict;
-
-    dict store[1000], sym[1000];
-    void inskorlam(dict *p, char *s, int n); 
-    int ch; 
-    int cnt2 = 1; 
-
-    void inskorlam2(dict *p, char *s, int n); 
+void yyerror(const char *s);
+int yylex(void);
+extern FILE *yyin;
+extern int yyparse();
+extern int yylineno;
 %}
 
-%union 
-{
+%union {
     int number;
+    float float_val;
     char *string;
 }
 
-/* BISON Declarations */
-%token <number> NUM 
-%token <string> VAR 
-%token <string> IF ELSE VOIDMAIN INT FLOAT CHAR LP RP LB RB CM SM PLUS MINUS MULT DIV ASSIGN FOR COL WHILE BREAK COLON DEFAULT CASE SWITCH inc importtt inpit SHOWOUT
-%type <string> statement
-%type <number> expression expression_switch
-%nonassoc IFX
-%nonassoc ELSE
-%left LT GT
+/* Token definitions */
+%token <string> ID FUNC_ID
+%token <number> NUMBER
+%token <float_val> FLOAT_NUM
+%token IMPORT FUNCTION MAIN RETURN
+%token IF ELSE ELIF
+%token EXERT_OUT
+%token INT FLOAT
+%token LPAREN RPAREN LBRACE RBRACE
+%token SEMICOLON
+%token ASSIGN
+%token PLUS MINUS MULT DIV
+%token GT LT
+%token END_MARKER
+
+/* Type definitions */
+%type <number> expr
+%type <string> type
+
+/* Operator precedence (lowest to highest) */
+%right ASSIGN
+%left GT LT
 %left PLUS MINUS
 %left MULT DIV
-
-/* Simple grammar rules */
-
-%%
-program: VOIDMAIN LP RP LB cstatement RB { printf("\nsuccessful compilation\n"); }
-    ;
-
-cstatement: /* empty */
-    | cstatement statement
-    | cdeclaration
-    ;
-
-cdeclaration: TYPE ID1 SM { printf("\nvalid declaration\n"); }
-    | importtt inpit SM    
-    ;
-    
-TYPE : INT
-     | FLOAT
-     | CHAR
-     ;
-
-ID1  : ID1 CM VAR {
-            if(number_for_key($3) != 0) {
-                printf("%s is already declared\n", $3 );
-            } else {
-                inskorlam(&store[cnt], $3, cnt);
-                cnt++;
-            }
-        }
-     | VAR {
-            if(number_for_key($1) != 0) {
-                printf("%s is already declared\n", $1 );
-            } else {
-                inskorlam(&store[cnt], $1, cnt);
-                cnt++;
-            }
-        }
-     ;
-
-statement: SM
-    | SWITCH LP expression_switch RP LB BASE RB { printf("SWITCH case.\n"); val = $3; }
-    | expression SM { printf("\nvalue of expression: %d\n", $1); }
-    | VAR ASSIGN expression SM {
-            if(number_for_key($1)) {
-                inskorlam2(&sym[cnt2], $1, $3);
-                cnt2++;
-                printf("\n(%s) Value of the variable: %d\n", $1, $3);
-            } else {
-                printf("%s not declared yet\n", $1);
-            }
-        }
-    | IF LP expression RP LB statement SM RB %prec IFX {
-            if($3) {
-                printf("\nvalue of expression in IF: %d\n", $6);
-            } else {
-                printf("\ncondition value zero in IF block\n");
-            }
-        }
-    | IF LP expression RP LB statement SM RB ELSE LB statement SM RB {
-            if($3) {
-                printf("\nvalue of expression in IF: %d\n", $6);
-            } else {
-                printf("\nvalue of expression in ELSE: %d\n", $11);
-            }
-        }
-    | FOR LP NUM COL NUM RP LB statement RB {
-            int i;
-            for(i = $3; i < $5; i++) {
-                printf("for loop statement\n");
-            }
-        }
-    | WHILE LP NUM GT NUM RP LB statement RB {
-            int i;
-            printf("While LOOP: ");
-            for(i = $3; i <= $5; i++) {
-                printf("%d ", i);
-            }
-            printf("\n");
-        }
-    ;
-
-expression: NUM { $$ = $1; }
-    | VAR { $$ = number_for_key2($1); printf("Variable value: %d\n", $$); }
-    | SHOWOUT LP expression RP { printf("print: %d\n", $3); }
-    | expression PLUS expression { $$ = $1 + $3; }
-    | expression MINUS expression { $$ = $1 - $3; }
-    | expression MULT expression { $$ = $1 * $3; }
-    | expression DIV expression {
-        if ($3) {
-            $$ = $1 / $3;
-        } else {
-            $$ = 0;
-            printf("\ndivision by zero\t");
-        }
-    }
-    | expression LT expression { $$ = $1 < $3; }
-    | expression GT expression { $$ = $1 > $3; }
-    | LP expression RP { $$ = $2; }
-    | inc expression inc { $$ = $2 + 1; printf("inc: %d\n", $$); }
-    ;
-
-expression_switch: NUM { $$ = $1; ch = $$; }
-    | VAR { $$ = number_for_key2($1); printf("Variable value: %d\n", $$); ch = $$; }
-    | SHOWOUT LP expression_switch RP { printf("print: %d\n", $3); ch = $$; }
-    | expression_switch PLUS expression_switch { $$ = $1 + $3; ch = $$; }
-    | expression_switch MINUS expression_switch { $$ = $1 - $3; ch = $$; }
-    | expression_switch MULT expression_switch { $$ = $1 * $3; ch = $$; }
-    | expression_switch DIV expression_switch {
-        if ($3) {
-            $$ = $1 / $3;
-        } else {
-            $$ = 0;
-            printf("\ndivision by zero\t");
-        }
-        ch = $$;
-    }
-    ;
-
-BASE: Bas | Bas Dflt ;
-Bas: /*NULL*/ | Bas Cs ;
-Cs: CASE NUM COL expression SM {
-        if($2 == ch) {
-            cntt = 1;
-            printf("\nCase No : %d  and Result :  %d\n", $2, $4);
-        }
-    }
-    ;
-Dflt: DEFAULT COLON NUM SM {
-        if(cntt == 0) {
-            printf("\nResult in default Value is :  %d \n", $3);
-        }
-    }
-    ;
+%nonassoc UMINUS
 
 %%
 
-void inskorlam(dict *p, char *s, int n) {
-    p->str = s;
-    p->n = n;
-}
+program: statements
+       {
+           printf("YACC: Program parsed successfully\n");
+       }
+       ;
 
-int number_for_key(char *key) {
-    int i = 1;
-    char *name = store[i].str;
-    while (name) {
-        if (strcmp(name, key) == 0)
-            return store[i].n;
-        name = store[++i].str;
+statements: /* empty */
+         | statements statement
+         {
+             printf("YACC: Statement processed\n");
+         }
+         ;
+
+statement: import_stmt
+        | function_decl
+        | expr_stmt
+        | var_decl
+        | if_stmt
+        | return_stmt
+        | SEMICOLON
+        ;
+
+import_stmt: IMPORT ID SEMICOLON
+          {
+              printf("YACC: Import statement for %s\n", $2);
+          }
+          ;
+
+function_decl: FUNCTION FUNC_ID LPAREN param_list RPAREN LBRACE statements RBRACE
+             {
+                 printf("YACC: Function defined: %s\n", $2);
+             }
+             | FUNCTION MAIN LPAREN RPAREN LBRACE statements RBRACE
+             {
+                 printf("YACC: Main function defined\n");
+             }
+             ;
+
+param_list: /* empty */
+         | param
+         ;
+
+param: type ID
+     {
+         printf("YACC: Parameter: %s of type %s\n", $2, $1);
+     }
+     ;
+
+expr_stmt: EXERT_OUT LPAREN expr RPAREN SEMICOLON
+        {
+            printf("YACC: EXERT statement with value %d\n", $3);
+        }
+        | expr SEMICOLON
+        {
+            printf("YACC: Expression statement\n");
+        }
+        ;
+
+var_decl: type ID ASSIGN expr SEMICOLON
+        {
+            printf("YACC: Variable declared and initialized: %s\n", $2);
+        }
+        ;
+
+return_stmt: RETURN expr SEMICOLON
+          {
+              printf("YACC: Return statement with value %d\n", $2);
+          }
+          ;
+
+if_stmt: IF LPAREN expr RPAREN LBRACE statements RBRACE
+       {
+           printf("YACC: IF statement\n");
+       }
+       | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
+       {
+           printf("YACC: IF-ELSE statement\n");
+       }
+       ;
+
+expr: NUMBER 
+    { 
+        $$ = $1;
+        printf("YACC: Number: %d\n", $1);
     }
-    return 0;
-}
-
-void inskorlam2(dict *p, char *s, int n) {
-    p->str = s;
-    p->n = n;
-}
-
-int number_for_key2(char *key) {
-    int i = 1;
-    char *name = sym[i].str;
-    int cnt4 = 1000;
-    while (cnt4--) {
-        if (strcmp(name, key) == 0)
-            return sym[i].n;
-        name = sym[++i].str;
+    | ID 
+    { 
+        $$ = 0;  // Simplified for testing
+        printf("YACC: ID: %s\n", $1);
     }
-    return 0;
-}
+    | MINUS expr %prec UMINUS
+    { 
+        $$ = -$2;
+        printf("YACC: Negation\n");
+    }
+    | expr PLUS expr 
+    { 
+        $$ = $1 + $3;
+        printf("YACC: Addition: %d + %d = %d\n", $1, $3, $$);
+    }
+    | expr MINUS expr 
+    { 
+        $$ = $1 - $3;
+        printf("YACC: Subtraction: %d - %d = %d\n", $1, $3, $$);
+    }
+    | expr MULT expr 
+    { 
+        $$ = $1 * $3;
+        printf("YACC: Multiplication: %d * %d = %d\n", $1, $3, $$);
+    }
+    | expr DIV expr 
+    { 
+        if ($3 != 0) {
+            $$ = $1 / $3;
+            printf("YACC: Division: %d / %d = %d\n", $1, $3, $$);
+        } else {
+            yyerror("Division by zero");
+            $$ = 0;
+        }
+    }
+    | expr GT expr 
+    { 
+        $$ = $1 > $3;
+        printf("YACC: Greater than: %d > %d = %d\n", $1, $3, $$);
+    }
+    | expr LT expr 
+    { 
+        $$ = $1 < $3;
+        printf("YACC: Less than: %d < %d = %d\n", $1, $3, $$);
+    }
+    | LPAREN expr RPAREN 
+    { 
+        $$ = $2;
+        printf("YACC: Parenthesized expression: %d\n", $$);
+    }
+    | FUNC_ID LPAREN expr RPAREN 
+    { 
+        $$ = $3;  // Simplified function call
+        printf("YACC: Function call to %s\n", $1);
+    }
+    ;
 
-int yywrap() {
-    return 1;
-}
+type: INT { $$ = "int"; }
+    | FLOAT { $$ = "float"; }
+    ;
+
+%%
 
 void yyerror(const char *s) {
-    printf("%s\n", s);
+    fprintf(stderr, "Error: %s at line %d\n", s, yylineno);
 }
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        if (!(yyin = fopen(argv[1], "r"))) {
+            printf("Could not open file: %s\n", argv[1]);
+            return 1;
+        }
+    }
+
+    printf("Starting parser...\n");
+    int result = yyparse();
+    
+    if (argc > 1) {
+        fclose(yyin);
+    }
+    
+    return result;
+}
+
