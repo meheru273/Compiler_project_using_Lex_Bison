@@ -1,11 +1,9 @@
 import math;
-
 function @add(int x) {
     return x + 5;
 }
-
 function main() {
     int x = 10;
     EXERT>(x);
 }
-$$ 
+$$
