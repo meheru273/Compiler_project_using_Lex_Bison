@@ -1,8 +1,4 @@
-
 flex cat.l
 bison -d cat.y
-gcc -o cat lex.yy.c cat.tab.c -lm -DYYDEBUG=1
-.\cat test_all.txt
-gcc -o cat lex.yy.c cat.tab.c
-
-
+gcc -o cat lex.yy.c cat.tab.c cat.c -lm -DYYDEBUG=1
+.\cat test.txt

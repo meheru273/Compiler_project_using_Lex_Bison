@@ -1,311 +1,343 @@
 %{
+#include "cat.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
-void yyerror(const char *s);
-int yylex(void);
-extern FILE *yyin;
-extern int yyparse();
-extern int yylineno;
-
-#define SYMTAB_SIZE 100
-
-/* Function table structure */
-#define MAX_PARAMS 10
-struct function {
-    char *name;
-    char *param_names[MAX_PARAMS];
-    int param_count;
-    int return_value;  // For simplicity, store last return value
-    int is_defined;
-};
-
-struct function functab[SYMTAB_SIZE];
-int func_count = 0;
-
-/* Function table operations */
-int func_lookup(char *name) {
-    for(int i = 0; i < func_count; i++) {
-        if(strcmp(functab[i].name, name) == 0) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int func_add(char *name) {
-    if(func_count < SYMTAB_SIZE) {
-        functab[func_count].name = strdup(name);
-        functab[func_count].param_count = 0;
-        functab[func_count].is_defined = 1;
-        return func_count++;
-    }
-    return -1;
-}
-
-void func_set_return(char *name, int value) {
-    int idx = func_lookup(name);
-    if(idx != -1) {
-        functab[idx].return_value = value;
-    }
-}
-
-int func_get_return(char *name) {
-    int idx = func_lookup(name);
-    if(idx != -1) {
-        return functab[idx].return_value;
-    }
-    return 0;
-}
-struct symbol {
-    char *name;
-    int value;
-    int is_initialized;
-};
-struct symbol symtab[SYMTAB_SIZE];
-int sym_count = 0;
-
-int sym_lookup(char *name) {
-    for(int i = 0; i < sym_count; i++) {
-        if(strcmp(symtab[i].name, name) == 0) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int sym_add(char *name, int value) {
-    if(sym_count < SYMTAB_SIZE) {
-        symtab[sym_count].name = strdup(name);
-        symtab[sym_count].value = value;
-        symtab[sym_count].is_initialized = 1;
-        return sym_count++;
-    }
-    return -1;
-}
-
-int sym_get_value(char *name) {
-    int idx = sym_lookup(name);
-    if(idx != -1 && symtab[idx].is_initialized) {
-        return symtab[idx].value;
-    }
-    return 0;
-}
-
-void sym_set_value(char *name, int value) {
-    int idx = sym_lookup(name);
-    if(idx != -1) {
-        symtab[idx].value = value;
-        symtab[idx].is_initialized = 1;
-    } else {
-        sym_add(name, value);
-    }
-}
+extern int yylex();
+extern int line_num;
+ASTNode *root = NULL;
+extern FILE *yyin; 
+extern int yydebug;
 %}
 
+%debug
+%verbose
+
 %union {
-    int number;
-    float float_val;
+    int integer;
+    float floating;
     char *string;
+    struct ASTNode *node;
 }
 
-%token <string> ID FUNC_ID
-%token <number> NUMBER
-%token <float_val> FLOAT_NUM
-%token IMPORT FUNCTION MAIN RETURN
-%token IF ELSE ELIF
-%token EXERT_OUT
-%token INT FLOAT
-%token LPAREN RPAREN LBRACE RBRACE
-%token SEMICOLON
-%token ASSIGN
-%token PLUS MINUS MULT DIV
-%token GT LT
-%token END_MARKER
 
-%type <number> expr
-%type <string> type
+/* Token declarations */
+%token TOKEN_IF TOKEN_ELSE TOKEN_ELIF TOKEN_SWITCH TOKEN_CASE
+%token TOKEN_DEFAULT TOKEN_BREAK TOKEN_FUNCTION TOKEN_INT TOKEN_FLOAT
+%token TOKEN_IMPORT TOKEN_INSERT TOKEN_EXERT
 
-%right ASSIGN
-%left GT LT
-%left PLUS MINUS
-%left MULT DIV
-%nonassoc UMINUS
+%token TOKEN_PLUS TOKEN_MINUS TOKEN_MULT TOKEN_DIV
+%token TOKEN_INCREMENT TOKEN_DECREMENT TOKEN_NOT TOKEN_COMP
+%token TOKEN_AND TOKEN_OR TOKEN_LOGICAL_NOT
+
+%token TOKEN_EQ TOKEN_NEQ TOKEN_GT TOKEN_LT TOKEN_GE TOKEN_LE
+%token TOKEN_ASSIGN TOKEN_PLUS_ASSIGN TOKEN_MINUS_ASSIGN TOKEN_MULT_ASSIGN TOKEN_DIV_ASSIGN
+%token TOKEN_SEMICOLON TOKEN_COLON TOKEN_LPAREN TOKEN_RPAREN TOKEN_LBRACE TOKEN_RBRACE
+
+%token <string> TOKEN_ID
+%token <integer> TOKEN_INT_VALUE
+%token <floating> TOKEN_FLOAT_VALUE
+%token TOKEN_COMMA
+
+
+
+
+/* Type declarations for non-terminals */
+%type <node> program statement_list statement
+%type <node> expression assignment_expr logical_expr relational_expr
+%type <node> additive_expr multiplicative_expr unary_expr primary_expr
+%type <node> function_declaration parameter_list parameter
+%type <node> if_statement else_if_list else_statement
+%type <node> switch_statement case_list case_statement
+%type <node> declaration variable_declaration import_statement
+%type <node> function_call argument_list block
+
+%left TOKEN_ASSIGN
+%left TOKEN_OR
+%left TOKEN_AND
+%left TOKEN_EQ TOKEN_NEQ
+%left TOKEN_LT TOKEN_LE TOKEN_GT TOKEN_GE
+%left TOKEN_PLUS TOKEN_MINUS
+%left TOKEN_MULT TOKEN_DIV
+%right TOKEN_NOT
 
 %%
 
-program: statements END_MARKER
-       {
-           printf("YACC: Program parsed successfully\n");
-       }
-       ;
+program
+    : statement_list                    { root = $1; }
+    ;
 
-statements: /* empty */
-         | statements statement
-         {
-             printf("YACC: Statement processed\n");
-         }
-         ;
-
-statement: import_stmt
-        | function_decl
-        | expr_stmt
-        | var_decl
-        | if_stmt
-        | return_stmt
-        | SEMICOLON
-        ;
-
-import_stmt: IMPORT ID SEMICOLON
-          {
-              printf("YACC: Import statement for %s\n", $2);
-          }
-          ;
-
-function_decl: FUNCTION FUNC_ID LPAREN param_list RPAREN LBRACE statements RBRACE
-             {
-                 func_add($2);
-                 printf("YACC: Function defined: %s\n", $2);
-             }
-             | FUNCTION MAIN LPAREN RPAREN LBRACE statements RBRACE
-             {
-                 printf("YACC: Main function defined\n");
-             }
-             ;
-
-param_list: /* empty */
-         | param
-         ;
-
-param: type ID
-     {
-         printf("YACC: Parameter: %s of type %s\n", $2, $1);
-     }
-     ;
-
-expr_stmt: EXERT_OUT LPAREN expr RPAREN SEMICOLON
-        {
-            printf("YACC: EXERT statement with value %d\n", $3);
+statement_list
+    : /* empty */                    { $$ = NULL; }
+    | statement                      { $$ = $1; }
+    | statement_list statement       { 
+        if ($1 == NULL) $$ = $2;
+        else {
+            ASTNode *node = $1;
+            while (node->next != NULL) node = node->next;
+            node->next = $2;
+            $$ = $1;
         }
-        | expr SEMICOLON
-        ;
+    }
+    ;
 
-var_decl: type ID ASSIGN expr SEMICOLON
-        {
-            sym_set_value($2, $4);
-            printf("YACC: Variable %s declared and initialized with value %d\n", $2, $4);
-        }
-        ;
 
-return_stmt: RETURN expr SEMICOLON
-          {
-              // Store return value in current function
-              // For now, just print it
-              printf("YACC: Return statement with value %d\n", $2);
-          }
-          ;
+statement
+    : declaration TOKEN_SEMICOLON      { $$ = $1; printf("Parsed declaration statement.\n"); }
+    | assignment_expr TOKEN_SEMICOLON  { $$ = $1; printf("Parsed assignment statement.\n"); }
+    | if_statement                     { $$ = $1; printf("Parsed if statement.\n"); }
+    | switch_statement                 { $$ = $1; printf("Parsed switch statement.\n"); }
+    | function_declaration             { $$ = $1; printf("Parsed function declaration.\n"); }
+    | import_statement TOKEN_SEMICOLON { $$ = $1; printf("Parsed import statement.\n"); }
+    | function_call TOKEN_SEMICOLON    { $$ = $1; printf("Parsed function call.\n"); }
+    | function_call block              { $$ = createNodeWithBlock(NODE_CALL_BLOCK, $1, $2); }
+    | TOKEN_BREAK TOKEN_SEMICOLON      { $$ = createNode(NODE_BREAK); printf("Parsed break statement.\n"); }
+    | block                            { $$ = $1; printf("Parsed block.\n"); }
+    | function_call TOKEN_BLOCK_START block { $$ = createNodeWithBlock(NODE_CALL_BLOCK, $1, $3); }
+    | TOKEN_EXERT TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_SEMICOLON {
+          $$ = createNode(NODE_EXERT);
+          $$->data.control.condition = $3;
+      }
+    ;
 
-if_stmt: IF LPAREN expr RPAREN LBRACE statements RBRACE
-       {
-           printf("YACC: IF statement\n");
-       }
-       | IF LPAREN expr RPAREN LBRACE statements RBRACE ELSE LBRACE statements RBRACE
-       {
-           printf("YACC: IF-ELSE statement\n");
-       }
-       ;
-    
-expr: NUMBER 
-    { 
+if_statement
+    : TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN block else_statement
+    | TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN block else_if_list else_statement %prec TOKEN_ELSE;
+
+parameter_list
+    : parameter                        { $$ = $1; }
+    | parameter_list TOKEN_COMMA parameter {
+        ASTNode *node = $1;
+        while (node->next != NULL) node = node->next;
+        node->next = $3;
         $$ = $1;
-        printf("YACC: Number: %d\n", $1);
     }
-    | ID 
-    { 
-        $$ = sym_get_value($1);
-        printf("YACC: ID: %s with value %d\n", $1, $$);
+    |                                 { $$ = NULL; }
+    ;
+
+parameter
+    : TOKEN_INT TOKEN_ID              {
+        int index = addSymbol($2, SYM_PARAMETER, TYPE_INT, currentScope + 1);
+        $$ = createNode(NODE_VARDECL);
+        $$->data.identifier.symbolIndex = index;
     }
-    | FUNC_ID LPAREN expr RPAREN 
-    { 
-        // For now, just return the parameter value
-        // In a full implementation, you'd need to handle function execution
-        $$ = $3;
-        printf("YACC: Function call to %s with parameter value %d\n", $1, $3);
+    | TOKEN_FLOAT TOKEN_ID            {
+        int index = addSymbol($2, SYM_PARAMETER, TYPE_FLOAT, currentScope + 1);
+        $$ = createNode(NODE_VARDECL);
+        $$->data.identifier.symbolIndex = index;
     }
-    | MINUS expr %prec UMINUS
-    { 
-        $$ = -$2;
-        printf("YACC: Negation\n");
+    ;
+
+function_call
+    : TOKEN_ID TOKEN_LPAREN argument_list TOKEN_RPAREN {
+        ASTNode *node = createNode(NODE_CALL);
+        strncpy(node->data.call.name, $1, MAX_ID_LENGTH - 1);
+        // Handle arguments
+        $$ = node;
     }
-    | expr PLUS expr 
-    { 
-        $$ = $1 + $3;
-        printf("YACC: Addition: %d + %d = %d\n", $1, $3, $$);
+    ;
+
+argument_list
+    : expression                      { $$ = $1; }
+    | argument_list TOKEN_COMMA expression {
+        ASTNode *node = $1;
+        while (node->next != NULL) node = node->next;
+        node->next = $3;
+        $$ = $1;
     }
-    | expr MINUS expr 
-    { 
-        $$ = $1 - $3;
-        printf("YACC: Subtraction: %d - %d = %d\n", $1, $3, $$);
+    |                                 { $$ = NULL; }
+    ;
+
+import_statement
+    : TOKEN_IMPORT TOKEN_ID           {
+        ASTNode *node = createNode(NODE_IMPORT);
+        strncpy(node->data.identifier.name, $2, MAX_ID_LENGTH - 1);
+        $$ = node;
     }
-    | expr MULT expr 
-    { 
-        $$ = $1 * $3;
-        printf("YACC: Multiplication: %d * %d = %d\n", $1, $3, $$);
+    ;
+
+switch_statement
+    : TOKEN_SWITCH TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_LBRACE case_list TOKEN_RBRACE {
+        ASTNode *node = createNode(NODE_SWITCH);
+        node->data.control.condition = $3;
+        node->data.control.thenBranch = $6;
+        $$ = node;
     }
-    | expr DIV expr 
-    { 
-        if ($3 != 0) {
-            $$ = $1 / $3;
-            printf("YACC: Division: %d / %d = %d\n", $1, $3, $$);
+    ;
+
+case_list
+    : case_statement                  { $$ = $1; }
+    | case_list case_statement        {
+        ASTNode *node = $1;
+        while (node->next != NULL) node = node->next;
+        node->next = $2;
+        $$ = $1;
+    }
+    ;
+
+case_statement
+    : TOKEN_CASE expression TOKEN_COLON statement_list {
+        ASTNode *node = createNode(NODE_CASE);
+        node->data.control.condition = $2;
+        node->data.control.thenBranch = $4;
+        $$ = node;
+    }
+    | TOKEN_DEFAULT TOKEN_COLON statement_list {
+        ASTNode *node = createNode(NODE_CASE);
+        node->data.control.condition = NULL;
+        node->data.control.thenBranch = $3;
+        $$ = node;
+    }
+    ;
+if_statement
+    : TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN block else_if_list else_statement {
+        $$ = createNode(NODE_IF);
+        $$->data.control.condition = $3;
+        $$->data.control.thenBranch = $5;
+        $$->data.control.elseBranch = $6 ? $6 : $7;
+    }
+    ;
+
+block
+    : TOKEN_LBRACE statement_list TOKEN_RBRACE { $$ = $2; printf("Parsed block with statements.\n"); }
+    | TOKEN_LBRACE TOKEN_RBRACE               { $$ = NULL; printf("Parsed empty block.\n"); }
+    ;
+
+else_if_list
+    : /* empty */ { $$ = NULL; }
+    | else_if_list TOKEN_ELIF TOKEN_LPAREN expression TOKEN_RPAREN block {
+        ASTNode *node = createNode(NODE_IF);
+        node->data.control.condition = $4;
+        node->data.control.thenBranch = $6;
+        if ($1 != NULL) {
+            ASTNode *temp = $1;
+            while (temp->data.control.elseBranch != NULL)
+                temp = temp->data.control.elseBranch;
+            temp->data.control.elseBranch = node;
+            $$ = $1;
         } else {
-            yyerror("Division by zero");
-            $$ = 0;
+            $$ = node;
         }
     }
-    | expr GT expr 
-    { 
-        $$ = $1 > $3;
-        printf("YACC: Greater than: %d > %d = %d\n", $1, $3, $$);
-    }
-    | expr LT expr 
-    { 
-        $$ = $1 < $3;
-        printf("YACC: Less than: %d < %d = %d\n", $1, $3, $$);
-    }
-    | LPAREN expr RPAREN 
-    { 
-        $$ = $2;
+    ;
+
+
+else_statement
+    : TOKEN_ELSE block { $$ = $2; }
+    | /* empty */ { $$ = NULL; }
+    ;
+expression
+    : assignment_expr           { $$ = $1; }
+    ;
+declaration
+    : variable_declaration { $$ = $1; }
+    ;
+assignment_expr:
+    TOKEN_ID TOKEN_ASSIGN expression { $$ = createBinaryOp(TOKEN_ASSIGN, createIdentifier($1), $3); }
+    | logical_expr { $$ = $1; }
+    ;
+
+
+logical_expr
+    : relational_expr
+    | logical_expr TOKEN_AND relational_expr { $$ = createBinaryOp(TOKEN_AND, $1, $3); }
+    | logical_expr TOKEN_OR relational_expr { $$ = createBinaryOp(TOKEN_OR, $1, $3); }
+    ;
+
+
+relational_expr
+    : additive_expr
+    | relational_expr TOKEN_GT additive_expr { $$ = createBinaryOp(TOKEN_GT, $1, $3); }
+    | relational_expr TOKEN_LT additive_expr { $$ = createBinaryOp(TOKEN_LT, $1, $3); }
+    | relational_expr TOKEN_EQ additive_expr { $$ = createBinaryOp(TOKEN_EQ, $1, $3); }
+    | relational_expr TOKEN_NEQ additive_expr { $$ = createBinaryOp(TOKEN_NEQ, $1, $3); }
+    ;
+
+
+additive_expr
+    : multiplicative_expr
+    | additive_expr TOKEN_PLUS multiplicative_expr { $$ = createBinaryOp(TOKEN_PLUS, $1, $3); }
+    | additive_expr TOKEN_MINUS multiplicative_expr { $$ = createBinaryOp(TOKEN_MINUS, $1, $3); }
+    ;
+
+multiplicative_expr
+    : unary_expr
+    | multiplicative_expr TOKEN_MULT unary_expr { $$ = createBinaryOp(TOKEN_MULT, $1, $3); }
+    | multiplicative_expr TOKEN_DIV unary_expr { $$ = createBinaryOp(TOKEN_DIV, $1, $3); }
+    ;
+
+unary_expr
+    : TOKEN_MINUS unary_expr { $$ = createUnaryOp(TOKEN_MINUS, $2); }
+    | primary_expr
+    ;
+
+
+primary_expr
+    : TOKEN_INT_VALUE           { $$ = createConstant(TYPE_INT, $1); }
+    | TOKEN_FLOAT_VALUE         { $$ = createConstant(TYPE_FLOAT, $1); }
+    | TOKEN_ID                  { $$ = createIdentifier($1); }
+    | TOKEN_LPAREN expression TOKEN_RPAREN { $$ = $2; }
+    ;
+
+function_declaration
+    : TOKEN_FUNCTION TOKEN_ID TOKEN_LPAREN parameter_list TOKEN_RPAREN block {
+        $$ = createNode(NODE_FUNCTION);
+        strncpy($$->data.identifier.name, $2, MAX_ID_LENGTH - 1);
+        $$->data.control.thenBranch = $6;
+        printf("Declared function: %s with parameters.\n", $2);
     }
     ;
 
-type: INT { $$ = "int"; }
-    | FLOAT { $$ = "float"; }
+
+
+variable_declaration
+    : TOKEN_INT TOKEN_ID        {
+        int index = addSymbol($2, SYM_VARIABLE, TYPE_INT, currentScope);
+        $$ = createNode(NODE_VARDECL);
+        $$->data.identifier.symbolIndex = index;
+    }
+    | TOKEN_FLOAT TOKEN_ID      {
+        int index = addSymbol($2, SYM_VARIABLE, TYPE_FLOAT, currentScope);
+        $$ = createNode(NODE_VARDECL);
+        $$->data.identifier.symbolIndex = index;
+    }
     ;
+
+
 
 %%
-
-void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s at line %d\n", s, yylineno);
-}
 
 int main(int argc, char **argv) {
-    sym_count = 0;  // Initialize symbol table
-    
-    if (argc > 1) {
-        if (!(yyin = fopen(argv[1], "r"))) {
-            printf("Could not open file: %s\n", argv[1]);
-            return 1;
-        }
+    if (argc < 2) {
+        printf("Usage: %s <input file>\n", argv[0]);
+        return 1;
     }
 
-    printf("Starting parser...\n");
-    int result = yyparse();
-    
-    if (argc > 1) {
-        fclose(yyin);
+    FILE *file = fopen(argv[1], "r");
+    FILE *outFile = fopen("output.txt", "w");  // Open output file
+    if (!file) {
+        perror("Error opening input file");
+        return 1;
     }
-    
-    return result;
+    if (!outFile) {
+        perror("Error opening output file");
+        fclose(file);
+        return 1;
+    }
+
+    yydebug = 1;
+    yyin = file;
+    initSymbolTable();
+
+    if (yyparse() == 0) {
+        fprintf(outFile, "Parsing completed successfully.\n");
+        fprintf(outFile, "\nGenerated Abstract Syntax Tree:\n");
+        printAST(root, outFile);  // We'll modify printAST to write to file
+    } else {
+        fprintf(outFile, "Parsing failed due to errors.\n");
+    }
+
+    fclose(file);
+    fclose(outFile);
+    return 0;
 }

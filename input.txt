@@ -1,5 +1,4 @@
-import math
-function @add(int x) {
-    return x + 10;
-}
-$$
+int x;
+float y;
+x = 10;
+EXERT>(X);

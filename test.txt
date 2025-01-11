@@ -1,0 +1,9 @@
+INT x;
+FLOAT y;
+x = 10;
+IF (x > 5) {
+    y = 3.14;
+} ELSE {
+    y = 0.0;
+}
+EXERT>(Y);

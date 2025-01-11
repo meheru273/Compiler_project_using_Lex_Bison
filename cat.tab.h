@@ -39,34 +39,51 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     ID = 258,
-     FUNC_ID = 259,
-     NUMBER = 260,
-     FLOAT_NUM = 261,
-     IMPORT = 262,
-     FUNCTION = 263,
-     MAIN = 264,
-     RETURN = 265,
-     IF = 266,
-     ELSE = 267,
-     ELIF = 268,
-     EXERT_OUT = 269,
-     INT = 270,
-     FLOAT = 271,
-     LPAREN = 272,
-     RPAREN = 273,
-     LBRACE = 274,
-     RBRACE = 275,
-     SEMICOLON = 276,
-     ASSIGN = 277,
-     PLUS = 278,
-     MINUS = 279,
-     MULT = 280,
-     DIV = 281,
-     GT = 282,
-     LT = 283,
-     END_MARKER = 284,
-     UMINUS = 285
+     TOKEN_IF = 258,
+     TOKEN_ELSE = 259,
+     TOKEN_ELIF = 260,
+     TOKEN_SWITCH = 261,
+     TOKEN_CASE = 262,
+     TOKEN_DEFAULT = 263,
+     TOKEN_BREAK = 264,
+     TOKEN_FUNCTION = 265,
+     TOKEN_INT = 266,
+     TOKEN_FLOAT = 267,
+     TOKEN_IMPORT = 268,
+     TOKEN_INSERT = 269,
+     TOKEN_EXERT = 270,
+     TOKEN_PLUS = 271,
+     TOKEN_MINUS = 272,
+     TOKEN_MULT = 273,
+     TOKEN_DIV = 274,
+     TOKEN_INCREMENT = 275,
+     TOKEN_DECREMENT = 276,
+     TOKEN_NOT = 277,
+     TOKEN_COMP = 278,
+     TOKEN_AND = 279,
+     TOKEN_OR = 280,
+     TOKEN_LOGICAL_NOT = 281,
+     TOKEN_EQ = 282,
+     TOKEN_NEQ = 283,
+     TOKEN_GT = 284,
+     TOKEN_LT = 285,
+     TOKEN_GE = 286,
+     TOKEN_LE = 287,
+     TOKEN_ASSIGN = 288,
+     TOKEN_PLUS_ASSIGN = 289,
+     TOKEN_MINUS_ASSIGN = 290,
+     TOKEN_MULT_ASSIGN = 291,
+     TOKEN_DIV_ASSIGN = 292,
+     TOKEN_SEMICOLON = 293,
+     TOKEN_COLON = 294,
+     TOKEN_LPAREN = 295,
+     TOKEN_RPAREN = 296,
+     TOKEN_LBRACE = 297,
+     TOKEN_RBRACE = 298,
+     TOKEN_ID = 299,
+     TOKEN_INT_VALUE = 300,
+     TOKEN_FLOAT_VALUE = 301,
+     TOKEN_COMMA = 302
    };
 #endif
 
@@ -77,16 +94,17 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 108 "cat.y"
+#line 16 "cat.y"
 
-    int number;
-    float float_val;
+    int integer;
+    float floating;
     char *string;
+    struct ASTNode *node;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 90 "cat.tab.h"
+#line 108 "cat.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

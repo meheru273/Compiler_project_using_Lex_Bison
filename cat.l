@@ -1,76 +1,72 @@
 %{
-#include <stdio.h>
-#include <string.h>
-#include "cat.tab.h"
-extern char *strdup(const char *s);  
-int line_number = 1;
-extern FILE* yyin;
+#include "cat.h"        
+#include "cat.tab.h"    
+int line_num = 1;      
+extern FILE *yyin;     
 %}
 
-
-
-
-%option yylineno
-
 %%
-"import"        { printf("LEX: Found IMPORT\n"); return IMPORT; }
-"function"      { printf("LEX: Found FUNCTION\n"); return FUNCTION; }
-"return"        { printf("LEX: Found RETURN\n"); return RETURN; }
-"main"          { printf("LEX: Found MAIN\n"); return MAIN; }
-"IF"            { printf("LEX: Found IF\n"); return IF; }
-"ELSE"          { printf("LEX: Found ELSE\n"); return ELSE; }
-"ELIF"          { printf("LEX: Found ELIF\n"); return ELIF; }
-"EXERT>"        { printf("LEX: Found EXERT_OUT\n"); return EXERT_OUT; }
-"int"           { printf("LEX: Found INT\n"); return INT; }
-"float"         { printf("LEX: Found FLOAT\n"); return FLOAT; }
+[ \t]                   { /* Ignore whitespace */ }
+\n                      { line_num++; }
 
-"+"             { printf("LEX: Found PLUS\n"); return PLUS; }
-"-"             { printf("LEX: Found MINUS\n"); return MINUS; }
-"*"             { printf("LEX: Found MULT\n"); return MULT; }
-"/"             { printf("LEX: Found DIV\n"); return DIV; }
-">"             { printf("LEX: Found GT\n"); return GT; }
-"<"             { printf("LEX: Found LT\n"); return LT; }
-"="             { printf("LEX: Found ASSIGN\n"); return ASSIGN; }
+"INT"                   { return TOKEN_INT; }
+"FLOAT"                 { return TOKEN_FLOAT; }
+"IF"                    { return TOKEN_IF; }
+"ELSE"                  { return TOKEN_ELSE; }
+"ELIF"                  { return TOKEN_ELIF; }
+"SWITCH"                { return TOKEN_SWITCH; }
+"CASE"                  { return TOKEN_CASE; }
+"DEFAULT"               { return TOKEN_DEFAULT; }
+"BREAK"                 { return TOKEN_BREAK; }
+"FUNCTION"              { return TOKEN_FUNCTION; }
+"IMPORT"                { return TOKEN_IMPORT; }
+"INSERT<"               { return TOKEN_INSERT; }
+"EXERT>"                { return TOKEN_EXERT; }
 
-"("             { printf("LEX: Found LPAREN\n"); return LPAREN; }
-")"             { printf("LEX: Found RPAREN\n"); return RPAREN; }
-"{"             { printf("LEX: Found LBRACE\n"); return LBRACE; }
-"}"             { printf("LEX: Found RBRACE\n"); return RBRACE; }
-";"             { printf("LEX: Found SEMICOLON\n"); return SEMICOLON; }
-"$$"            { printf("LEX: Found END_MARKER\n"); return END_MARKER; }
+"="                     { return TOKEN_ASSIGN; }
+"+"                     { return TOKEN_PLUS; }
+"-"                     { return TOKEN_MINUS; }
+"*"                     { return TOKEN_MULT; }
+"/"                     { return TOKEN_DIV; }
+"++"                    { return TOKEN_INCREMENT; }
+"--"                    { return TOKEN_DECREMENT; }
+"!"                     { return TOKEN_NOT; }
+"^"                     { return TOKEN_COMP; }
+"&&"                    { return TOKEN_AND; }
+"||"                    { return TOKEN_OR; }
+"!!"                    { return TOKEN_LOGICAL_NOT; }
 
-@[a-zA-Z][a-zA-Z0-9_]*  { 
-    printf("LEX: Found FUNC_ID: %s\n", yytext);
-    yylval.string = strdup(yytext);
-    return FUNC_ID;
-}
+"=="                    { return TOKEN_EQ; }
+"!="                    { return TOKEN_NEQ; }
+">"                     { return TOKEN_GT; }
+"<"                     { return TOKEN_LT; }
+">="                    { return TOKEN_GE; }
+"<="                    { return TOKEN_LE; }
 
-[a-zA-Z][a-zA-Z0-9_]*   { 
-    printf("LEX: Found ID: %s\n", yytext);
-    yylval.string = strdup(yytext);
-    return ID;
-}
+"+="                    { return TOKEN_PLUS_ASSIGN; }
+"-="                    { return TOKEN_MINUS_ASSIGN; }
+"*="                    { return TOKEN_MULT_ASSIGN; }
+"/="                    { return TOKEN_DIV_ASSIGN; }
 
-[0-9]+          { 
-    printf("LEX: Found NUMBER: %s\n", yytext);
-    yylval.number = atoi(yytext);
-    return NUMBER;
-}
+"("                     { return TOKEN_LPAREN; }
+")"                     { return TOKEN_RPAREN; }
+"{"                     { printf("TOKEN_LBRACE matched\n"); return TOKEN_LBRACE; }
+"}"                     { printf("TOKEN_RBRACE matched\n"); return TOKEN_RBRACE; }
+";"                     { return TOKEN_SEMICOLON; }
+":"                     { return TOKEN_COLON; }
+","                     { return TOKEN_COMMA; }
 
-[0-9]+\.[0-9]+  { 
-    printf("LEX: Found FLOAT_NUM: %s\n", yytext);
-    yylval.float_val = atof(yytext);
-    return FLOAT_NUM;
-}
+[0-9]+                  { yylval.integer = atoi(yytext); return TOKEN_INT_VALUE; }
+[0-9]+\.[0-9]+          { yylval.floating = atof(yytext); return TOKEN_FLOAT_VALUE; }
+[a-zA-Z_][a-zA-Z0-9_]*  { yylval.string = strdup(yytext); return TOKEN_ID; }
 
-"[%]"[^\n]*     { printf("LEX: Found comment\n"); }  /* Skip comments */
-[ \t]           ;  /* Skip whitespace */
-\n              ;  /* Skip newlines */
-.               { printf("LEX: Unexpected character: %s\n", yytext); }
+[%].*                   { /* Single line comment */ }
+[/][m][/][^/]*[/][m][/] { /* Multi-line comment */ }
+
+.                       { printf("Unknown character: %s\n", yytext); }
 
 %%
 
 int yywrap(void) {
     return 1;
 }
-
