@@ -6,5 +6,19 @@ IF (x > 5) {
 } ELSE {
     y = 0.0;
 }
-EXERT>(Y);
+EXERT>(y);
 EXERT>("hello world");
+
+INT a = 5;
+EXERT>(a);
+
+SWITCH (X) {
+    CASE 5:
+        EXERT>("X IS 5");
+        BREAK;
+    CASE 10:
+        EXERT>("X IS 10");
+        BREAK;
+    DEFAULT:
+        EXERT>("X IS SOMETHING ELSE");
+}

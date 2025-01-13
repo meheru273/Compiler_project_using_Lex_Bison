@@ -24,43 +24,44 @@ void initSymbolTable() {
 }
 
 int addSymbol(const char *name, SymbolType symType, DataType dataType, int scope) {
-    
     if (symbolCount >= MAX_SYMBOLS) {
         yyerror("Symbol table full");
         return -1;
     }
-    
-    // Check for existing symbol in current scope
+
+    // Check for duplicate symbol in the current scope
     for (int i = 0; i < symbolCount; i++) {
         if (strcmp(symbolTable[i].name, name) == 0 && symbolTable[i].scope == scope) {
-            return i;  // Symbol already exists in current scope
+            return i;  // Symbol already exists
         }
     }
-    
+
     // Add new symbol
     SymbolEntry *symbol = &symbolTable[symbolCount];
     strncpy(symbol->name, name, MAX_ID_LENGTH - 1);
+    symbol->name[MAX_ID_LENGTH - 1] = '\0';  // Ensure null-termination
     symbol->symType = symType;
     symbol->dataType = dataType;
     symbol->scope = scope;
     symbol->initialized = 0;
+    symbol->value.intValue = 0;  // Default to zero
+    symbol->value.floatValue = 0.0;
     printf("Added symbol: %s, Type: %d, DataType: %d, Scope: %d\n", name, symType, dataType, scope);
     return symbolCount++;
 }
 
+
 int lookupSymbol(const char *name, int scope) {
-    // Search in current and outer scopes
-    printf("Looking up symbol: %s in scope %d...\n", name, scope);
     for (int s = scope; s >= 0; s--) {
         for (int i = 0; i < symbolCount; i++) {
             if (strcmp(symbolTable[i].name, name) == 0 && symbolTable[i].scope == s) {
-                printf("Found symbol '%s' at index %d in scope %d.\n", name, i, s);
                 return i;
             }
         }
     }
-    return -1;
+    return -1;  // Symbol not found
 }
+
 
 ASTNode *createNode(NodeType type) {
     ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
@@ -73,6 +74,19 @@ ASTNode *createNode(NodeType type) {
     node->type = type;
     node->next = NULL;
     
+    if (type == NODE_VARDECL) {
+        node->data.identifier.hasInitializer = 0;
+        node->data.identifier.initializer = NULL;
+    }
+    
+    return node;
+}
+ASTNode *createNodeWithBlock(NodeType type, ASTNode *callNode, ASTNode *blockNode) {
+    ASTNode *node = createNode(type);
+    if (!node) return NULL;
+
+    node->data.callBlock.call = callNode;
+    node->data.callBlock.block = blockNode;
     return node;
 }
 
@@ -112,9 +126,11 @@ ASTNode *createConstant(DataType type, ...) {
 ASTNode *createIdentifier(const char *name) {
     ASTNode *node = createNode(NODE_IDENTIFIER);
     strncpy(node->data.identifier.name, name, MAX_ID_LENGTH - 1);
+    node->data.identifier.name[MAX_ID_LENGTH - 1] = '\0';  // Ensure null-termination
     node->data.identifier.symbolIndex = lookupSymbol(name, currentScope);
     return node;
 }
+
 
 void freeAST(ASTNode *node) {
     if (!node) return;
@@ -149,72 +165,134 @@ void printAST(ASTNode *node, FILE *outFile) {
     if (!node) return;
 
     switch (node->type) {
-        case NODE_EXERT: {
-            ASTNode *expr = node->data.control.condition;
-            if (expr->type == NODE_CONSTANT) {
-                // Handle string literals (you'll need to add string support to your lexer/parser)
-                if (expr->data.constant.dataType == TYPE_STRING) {
-                    fprintf(outFile, "%s\n", expr->data.constant.stringValue);
-                } else {
-                    // Handle numeric values
-                    float value = evaluateExpression(expr);
-                    fprintf(outFile, "%.2f\n", value);
-                }
+        case NODE_VARDECL:
+            if (strlen(node->data.identifier.name) > 0) {
+                fprintf(outFile, "Variable Declaration: %s\n", node->data.identifier.name);
             } else {
-                // Handle variables and expressions
-                float value = evaluateExpression(expr);
-                fprintf(outFile, "%.2f\n", value);
+                fprintf(outFile, "Variable Declaration: <unnamed>\n");
             }
             break;
-        }
-        // ... rest of the cases remain the same ...
+
+        case NODE_BINARY_OP:
+            switch (node->data.operation.operator) {
+                case TOKEN_GT:
+                    fprintf(outFile, "Binary Operation: >\n");
+                    fprintf(outFile, "Left operand:\n");
+                    printAST(node->data.operation.left, outFile);
+                    fprintf(outFile, "Right operand:\n");
+                    printAST(node->data.operation.right, outFile);
+                    break;
+                case TOKEN_ASSIGN:
+                    fprintf(outFile, "Assignment Operation\n");
+                    fprintf(outFile, "Target: ");
+                    if (node->data.operation.left && node->data.operation.left->type == NODE_IDENTIFIER) {
+                        fprintf(outFile, "%s\n", node->data.operation.left->data.identifier.name);
+                    }
+                    fprintf(outFile, "Value: ");
+                    if (node->data.operation.right && node->data.operation.right->type == NODE_CONSTANT) {
+                        if (node->data.operation.right->data.constant.dataType == TYPE_INT) {
+                            fprintf(outFile, "%d\n", node->data.operation.right->data.constant.intValue);
+                        } else if (node->data.operation.right->data.constant.dataType == TYPE_FLOAT) {
+                            fprintf(outFile, "%.2f\n", node->data.operation.right->data.constant.floatValue);
+                        }
+                    }
+                    break;
+                default:
+                    fprintf(outFile, "Unknown binary operation\n");
+            }
+            break;
+
+        case NODE_IF:
+            fprintf(outFile, "If Statement:\n");
+            if (node->data.control.condition) {
+                fprintf(outFile, "Condition:\n");
+                printAST(node->data.control.condition, outFile);
+            }
+            if (node->data.control.thenBranch) {
+                fprintf(outFile, "Then Branch:\n");
+                printAST(node->data.control.thenBranch, outFile);
+            }
+            if (node->data.control.elseBranch) {
+                fprintf(outFile, "Else Branch:\n");
+                printAST(node->data.control.elseBranch, outFile);
+            }
+            break;
+
+        case NODE_CONSTANT:
+            if (node->data.constant.dataType == TYPE_INT) {
+                fprintf(outFile, "Constant: %d\n", node->data.constant.intValue);
+            } else if (node->data.constant.dataType == TYPE_FLOAT) {
+                fprintf(outFile, "Constant: %.2f\n", node->data.constant.floatValue);
+            } else if (node->data.constant.dataType == TYPE_STRING) {
+                fprintf(outFile, "String Constant: %s\n", node->data.constant.stringValue);
+            }
+            break;
+
+        case NODE_IDENTIFIER:
+            fprintf(outFile, "Identifier: %s\n", node->data.identifier.name);
+            break;
+
+        case NODE_EXERT:
+            fprintf(outFile, "Exert Statement:\n");
+            if (node->data.control.condition->type == NODE_IDENTIFIER) {
+                int index = node->data.control.condition->data.identifier.symbolIndex;
+                if (index >= 0) {
+                    SymbolEntry *symbol = &symbolTable[index];
+                    fprintf(outFile, "Identifier: %s, Value: ", symbol->name);
+                    if (symbol->dataType == TYPE_INT)
+                        fprintf(outFile, "%d\n", symbol->value.intValue);
+                    else if (symbol->dataType == TYPE_FLOAT)
+                        fprintf(outFile, "%.2f\n", symbol->value.floatValue);
+                } else {
+                    fprintf(outFile, "Identifier: %s (Uninitialized)\n",
+                            node->data.control.condition->data.identifier.name);
+                }
+            } else if (node->data.control.condition->type == NODE_CONSTANT) {
+                if (node->data.control.condition->data.constant.dataType == TYPE_STRING) {
+                    fprintf(outFile, "String Constant: %s\n", 
+                            node->data.control.condition->data.constant.stringValue);
+                }
+            }
+            break;
+
+        default:
+            fprintf(outFile, "Unhandled node type: %d\n", node->type);
+            break;
     }
 
     if (node->next) {
         printAST(node->next, outFile);
     }
 }
-ASTNode *createNodeWithBlock(NodeType type, ASTNode *callNode, ASTNode *blockNode) {
-    // Create a new AST node
-    ASTNode *node = createNode(type);
-
-    // Ensure the type is appropriate for a function call with a block
-    if (type != NODE_CALL_BLOCK) {
-        yyerror("Invalid node type for createNodeWithBlock");
-        return NULL;
-    }
-
-    // Link the function call node and block node
-    node->data.callBlock.call = callNode;
-    node->data.callBlock.block = blockNode;
-
-    return node;
-}
-
 float evaluateExpression(ASTNode *node) {
     if (!node) return 0.0;
-    
-    float left, right;
-    
+
     switch (node->type) {
         case NODE_CONSTANT:
+            // Return the constant's value
             if (node->data.constant.dataType == TYPE_INT)
                 return (float)node->data.constant.intValue;
-            return node->data.constant.floatValue;
-            
+            if (node->data.constant.dataType == TYPE_FLOAT)
+                return node->data.constant.floatValue;
+            return 0.0;
+
         case NODE_IDENTIFIER: {
+            // Lookup the symbol table for the identifier's value
             int index = node->data.identifier.symbolIndex;
             if (index >= 0) {
-                if (symbolTable[index].dataType == TYPE_INT)
-                    return (float)symbolTable[index].value.intValue;
-                return symbolTable[index].value.floatValue;
+                SymbolEntry *symbol = &symbolTable[index];
+                if (symbol->dataType == TYPE_INT)
+                    return (float)symbol->value.intValue;
+                if (symbol->dataType == TYPE_FLOAT)
+                    return symbol->value.floatValue;
             }
+            fprintf(stderr, "Error: Uninitialized variable '%s'\n", node->data.identifier.name);
             return 0.0;
         }
-        
-        case NODE_BINARY_OP:
-            left = evaluateExpression(node->data.operation.left);
-            right = evaluateExpression(node->data.operation.right);
+
+        case NODE_BINARY_OP: {
+            float left = evaluateExpression(node->data.operation.left);
+            float right = evaluateExpression(node->data.operation.right);
             switch (node->data.operation.operator) {
                 case TOKEN_PLUS: return left + right;
                 case TOKEN_MINUS: return left - right;
@@ -222,11 +300,30 @@ float evaluateExpression(ASTNode *node) {
                 case TOKEN_DIV: return right != 0 ? left / right : 0;
                 default: return 0.0;
             }
-            
+        }
+        case NODE_ASSIGNMENT: {
+            float rhs_value = evaluateExpression(node->data.operation.right);
+            int target_index = node->data.operation.left->data.identifier.symbolIndex;
+            if (target_index >= 0) {
+            if (symbolTable[target_index].dataType == TYPE_INT) {
+            symbolTable[target_index].value.intValue = (int)rhs_value;
+            } else {
+            symbolTable[target_index].value.floatValue = rhs_value;
+            }
+            symbolTable[target_index].initialized = 1;
+            }
+    
+    return rhs_value;
+        }
+
         default:
+            fprintf(stderr, "Unhandled node type in evaluateExpression: %d\n", node->type);
             return 0.0;
     }
 }
+
+
+
 ASTNode *createConstantString(const char *value) {
     ASTNode *node = createNode(NODE_CONSTANT);
     node->data.constant.dataType = TYPE_STRING;

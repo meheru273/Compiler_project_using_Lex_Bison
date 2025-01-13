@@ -84,6 +84,13 @@ typedef struct ASTNode {
         struct {
             char name[MAX_ID_LENGTH];
             int symbolIndex;
+            DataType dataType;  // Added this field to track the data type
+            union {
+                int intValue;
+                float floatValue;
+            } value; // To hold initialized value
+            int hasInitializer;           // Add this field
+            struct ASTNode *initializer;
         } identifier;
 
         // For operators

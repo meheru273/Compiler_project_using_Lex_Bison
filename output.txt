@@ -1,5 +1,31 @@
 Parsing completed successfully.
 
 Generated Abstract Syntax Tree:
-0.00
-"hello world"
+Variable Declaration: x
+Variable Declaration: y
+Assignment Operation
+Target: x
+Value: 10
+If Statement:
+Condition:
+Binary Operation: >
+Left operand:
+Identifier: x
+Right operand:
+Constant: 5
+Then Branch:
+Assignment Operation
+Target: y
+Value: 3.14
+Else Branch:
+Assignment Operation
+Target: y
+Value: 0.00
+Exert Statement:
+Identifier: y, Value: 0.00
+Exert Statement:
+String Constant: "hello world"
+Variable Declaration: a
+Exert Statement:
+Identifier: a, Value: 0
+Unhandled node type: 4

@@ -96,11 +96,11 @@ statement
     | TOKEN_BREAK TOKEN_SEMICOLON      { $$ = createNode(NODE_BREAK); printf("Parsed break statement.\n"); }
     | block                            { $$ = $1; printf("Parsed block.\n"); }
     | function_call TOKEN_BLOCK_START block { $$ = createNodeWithBlock(NODE_CALL_BLOCK, $1, $3); }
-    | TOKEN_EXERT TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_SEMICOLON {
+    | TOKEN_EXERT expression TOKEN_SEMICOLON    { 
         $$ = createNode(NODE_EXERT);
-        $$->data.control.condition = $3;
+        $$->data.control.condition = $2;
         printf("Parsed exert statement.\n");
-        }
+    }
     ;
 
 
@@ -236,7 +236,7 @@ declaration
 assignment_expr:
     TOKEN_ID TOKEN_ASSIGN expression { $$ = createBinaryOp(TOKEN_ASSIGN, createIdentifier($1), $3); }
     | logical_expr { $$ = $1; }
-    ;
+    
 
 
 logical_expr
@@ -287,21 +287,39 @@ function_declaration
     }
     ;
 
-
-
 variable_declaration
-    : TOKEN_INT TOKEN_ID        {
+    : TOKEN_INT TOKEN_ID {
         int index = addSymbol($2, SYM_VARIABLE, TYPE_INT, currentScope);
         $$ = createNode(NODE_VARDECL);
+        strncpy($$->data.identifier.name, $2, MAX_ID_LENGTH - 1);  // Add this line
         $$->data.identifier.symbolIndex = index;
+        $$->data.identifier.dataType = TYPE_INT;
     }
-    | TOKEN_FLOAT TOKEN_ID      {
+    | TOKEN_FLOAT TOKEN_ID {
+        int index = addSymbol($2, SYM_VARIABLE, TYPE_FLOAT, currentScope);
+        $$ = createNode(NODE_VARDECL);
+        strncpy($$->data.identifier.name, $2, MAX_ID_LENGTH - 1);  // Add this line
+        $$->data.identifier.symbolIndex = index;
+        $$->data.identifier.dataType = TYPE_FLOAT;
+    }
+    | TOKEN_FLOAT TOKEN_ID TOKEN_ASSIGN expression {
         int index = addSymbol($2, SYM_VARIABLE, TYPE_FLOAT, currentScope);
         $$ = createNode(NODE_VARDECL);
         $$->data.identifier.symbolIndex = index;
+        $$->data.identifier.dataType = TYPE_FLOAT;
+        $$->data.identifier.hasInitializer = 1;
+        $$->data.identifier.initializer = $4;
+    }
+    |TOKEN_INT TOKEN_ID TOKEN_ASSIGN expression {
+        int index = addSymbol($2, SYM_VARIABLE, TYPE_INT, currentScope);
+        $$ = createNode(NODE_VARDECL);
+        strncpy($$->data.identifier.name, $2, MAX_ID_LENGTH - 1);  // Add this line
+        $$->data.identifier.symbolIndex = index;
+        $$->data.identifier.dataType = TYPE_INT;
+        $$->data.identifier.hasInitializer = 1;
+        $$->data.identifier.initializer = $4;
     }
     ;
-
 
 
 %%
