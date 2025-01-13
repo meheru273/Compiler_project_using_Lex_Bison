@@ -1,4 +1,88 @@
-int x;
-float y;
-x = 10;
-EXERT>(X);
+
+
+INT A = 10;
+INT B = 20;
+INT RESULT;
+RESULT = A + B * 2;   
+RESULT = (A > B) || (A < B);  
+SWITCH (RESULT) {  
+    CASE 1:
+        RESULT = RESULT + 1;
+        BREAK;
+    DEFAULT:
+        RESULT = 0;
+}
+
+INT x = 10;
+FLOAT y = 5.5;
+EXERT>(x);
+EXERT>(y);
+EXERT>("Hello, World!");
+
+
+INT X = 10;
+FLOAT Y = 20.5;
+
+
+X = X + 5;
+Y = Y - 3.2;
+X = X * 2;
+
+
+
+X += 10;
+Y -= 5.5;
+X *= 3;
+
+
+
+X++;
+Y--;
+INT Z = -X;
+FLOAT W = -Y;
+
+
+INT A = (X > 5) && (Y < 10);
+INT B = (X < 15) || (Y > 12);
+INT C = !(X == 20);
+
+
+INT D = (X > 5);
+INT E = (Y < 10);
+INT F = (X >= 5);
+INT G = (Y <= 10);
+INT H = (X == 5);
+INT I = (Y != 10);
+
+
+INT J = X ^ 3;
+
+
+
+
+IF (X > Y) {
+    EXERT>("X IS GREATER THAN Y");
+} ELSE IF (X == Y) {
+    EXERT>("X IS EQUAL TO Y");
+} ELSE {
+    EXERT>("X IS LESS THAN Y");
+}
+
+
+SWITCH (X) {
+    CASE 5:
+        EXERT>("X IS 5");
+        BREAK;
+    CASE 10:
+        EXERT>("X IS 10");
+        BREAK;
+    DEFAULT:
+        EXERT>("X IS SOMETHING ELSE");
+}
+
+
+INSERT<("TESTING INSERT OPERATION");
+EXERT>("TESTING EXERT OPERATION");
+
+
+EXERT>("HELLO\nWORLD\t!");

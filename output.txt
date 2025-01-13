@@ -6,7 +6,9 @@ Variable Declaration: y
 Assignment Operation
 Target: x
 Value: 10
-If Statement:
+Assignment Operation
+Target: result
+Value: If Statement:
 Condition:
 Binary Operation: >
 Left operand:
@@ -25,7 +27,43 @@ Exert Statement:
 Identifier: y, Value: 0.00
 Exert Statement:
 String Constant: "hello world"
+Exert Statement:
+Identifier: result (Uninitialized)
 Variable Declaration: a
 Exert Statement:
 Identifier: a, Value: 0
-Unhandled node type: 4
+Switch Statement:
+Condition:
+Identifier: X
+Cases:
+Case:
+Case Value:
+Constant: 5
+Case Body:
+Exert Statement:
+String Constant: "X IS 5"
+Break Statement
+Case:
+Case Value:
+Constant: 10
+Case Body:
+Exert Statement:
+String Constant: "X IS 10"
+Break Statement
+Case:
+Default Case
+Case Body:
+Exert Statement:
+String Constant: "X IS SOMETHING ELSE"
+Assignment Operation
+Target: x
+Value: Function Declaration: add
+Function Body:
+Variable Declaration: result
+Exert Statement:
+Identifier: result, Value: 0
+Exert Statement:
+String Constant: "Addition complete!"
+Variable Declaration: x
+Variable Declaration: y
+Function Call: add

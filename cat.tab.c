@@ -503,11 +503,11 @@ static const yytype_uint16 yyrline[] =
 {
        0,    69,    69,    73,    74,    75,    88,    89,    90,    91,
       92,    93,    94,    95,    96,    97,    98,    99,   109,   110,
-     116,   120,   125,   133,   142,   143,   149,   153,   161,   170,
-     171,   180,   186,   194,   203,   204,   208,   209,   227,   228,
-     231,   234,   237,   238,   243,   244,   245,   249,   250,   251,
-     252,   253,   257,   258,   259,   263,   264,   265,   269,   270,
-     274,   275,   276,   277,   278,   282,   291,   298,   305,   313
+     116,   120,   125,   133,   142,   143,   149,   153,   161,   171,
+     172,   187,   193,   201,   210,   211,   215,   216,   234,   235,
+     238,   241,   244,   245,   250,   251,   252,   256,   257,   258,
+     259,   260,   264,   265,   266,   270,   271,   272,   276,   277,
+     281,   282,   283,   284,   285,   289,   298,   305,   312,   320
 };
 #endif
 
@@ -1735,60 +1735,67 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 161 "cat.y"
     {
-        ASTNode *node = createNode(NODE_SWITCH);
-        node->data.control.condition = (yyvsp[(3) - (7)].node);
-        node->data.control.thenBranch = (yyvsp[(6) - (7)].node);
-        (yyval.node) = node;
+        (yyval.node) = createNode(NODE_SWITCH);
+        (yyval.node)->data.control.condition = (yyvsp[(3) - (7)].node);
+        (yyval.node)->data.control.thenBranch = (yyvsp[(6) - (7)].node);  // This points to the first case
+        (yyval.node)->data.control.elseBranch = NULL;
+        printf("Created switch node\n");
     ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 170 "cat.y"
+#line 171 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 171 "cat.y"
+#line 172 "cat.y"
     {
-        ASTNode *node = (yyvsp[(1) - (2)].node);
-        while (node->next != NULL) node = node->next;
-        node->next = (yyvsp[(2) - (2)].node);
-        (yyval.node) = (yyvsp[(1) - (2)].node);
+        if ((yyvsp[(1) - (2)].node)) {
+            ASTNode *last = (yyvsp[(1) - (2)].node);
+            while (last->data.control.elseBranch) {
+                last = last->data.control.elseBranch;
+            }
+            last->data.control.elseBranch = (yyvsp[(2) - (2)].node);
+            (yyval.node) = (yyvsp[(1) - (2)].node);
+        } else {
+            (yyval.node) = (yyvsp[(2) - (2)].node);
+        }
     ;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 180 "cat.y"
+#line 187 "cat.y"
     {
-        ASTNode *node = createNode(NODE_CASE);
-        node->data.control.condition = (yyvsp[(2) - (4)].node);
-        node->data.control.thenBranch = (yyvsp[(4) - (4)].node);
-        (yyval.node) = node;
+        (yyval.node) = createNode(NODE_CASE);
+        (yyval.node)->data.control.condition = (yyvsp[(2) - (4)].node);
+        (yyval.node)->data.control.thenBranch = (yyvsp[(4) - (4)].node);
+        (yyval.node)->data.control.elseBranch = NULL;
     ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 186 "cat.y"
+#line 193 "cat.y"
     {
-        ASTNode *node = createNode(NODE_CASE);
-        node->data.control.condition = NULL;
-        node->data.control.thenBranch = (yyvsp[(3) - (3)].node);
-        (yyval.node) = node;
+        (yyval.node) = createNode(NODE_CASE);
+        (yyval.node)->data.control.condition = NULL;
+        (yyval.node)->data.control.thenBranch = (yyvsp[(3) - (3)].node);
+        (yyval.node)->data.control.elseBranch = NULL;
     ;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 194 "cat.y"
+#line 201 "cat.y"
     {
         (yyval.node) = createNode(NODE_IF);
         (yyval.node)->data.control.condition = (yyvsp[(3) - (7)].node);
@@ -1800,28 +1807,28 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 203 "cat.y"
+#line 210 "cat.y"
     { (yyval.node) = (yyvsp[(2) - (3)].node); printf("Parsed block with statements.\n"); ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 204 "cat.y"
+#line 211 "cat.y"
     { (yyval.node) = NULL; printf("Parsed empty block.\n"); ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 208 "cat.y"
+#line 215 "cat.y"
     { (yyval.node) = NULL; ;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 209 "cat.y"
+#line 216 "cat.y"
     {
         ASTNode *node = createNode(NODE_IF);
         node->data.control.condition = (yyvsp[(4) - (6)].node);
@@ -1841,196 +1848,196 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 227 "cat.y"
+#line 234 "cat.y"
     { (yyval.node) = (yyvsp[(2) - (2)].node); ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 228 "cat.y"
+#line 235 "cat.y"
     { (yyval.node) = NULL; ;}
     break;
 
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 231 "cat.y"
+#line 238 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 234 "cat.y"
+#line 241 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 237 "cat.y"
+#line 244 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_ASSIGN, createIdentifier((yyvsp[(1) - (3)].string)), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 238 "cat.y"
+#line 245 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 243 "cat.y"
+#line 250 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 244 "cat.y"
+#line 251 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_AND, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 245 "cat.y"
+#line 252 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_OR, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 249 "cat.y"
+#line 256 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 250 "cat.y"
+#line 257 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_GT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 251 "cat.y"
+#line 258 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_LT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 252 "cat.y"
+#line 259 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_EQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 253 "cat.y"
+#line 260 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_NEQ, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 257 "cat.y"
+#line 264 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 258 "cat.y"
+#line 265 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_PLUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 259 "cat.y"
+#line 266 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_MINUS, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 263 "cat.y"
+#line 270 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 264 "cat.y"
+#line 271 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_MULT, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 265 "cat.y"
+#line 272 "cat.y"
     { (yyval.node) = createBinaryOp(TOKEN_DIV, (yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); ;}
     break;
 
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 269 "cat.y"
+#line 276 "cat.y"
     { (yyval.node) = createUnaryOp(TOKEN_MINUS, (yyvsp[(2) - (2)].node)); ;}
     break;
 
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 270 "cat.y"
+#line 277 "cat.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); ;}
     break;
 
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 274 "cat.y"
+#line 281 "cat.y"
     { (yyval.node) = createConstant(TYPE_INT, (yyvsp[(1) - (1)].integer)); ;}
     break;
 
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 275 "cat.y"
+#line 282 "cat.y"
     { (yyval.node) = createConstant(TYPE_FLOAT, (yyvsp[(1) - (1)].floating)); ;}
     break;
 
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 276 "cat.y"
+#line 283 "cat.y"
     { (yyval.node) = createConstantString((yyvsp[(1) - (1)].string)); ;}
     break;
 
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 277 "cat.y"
+#line 284 "cat.y"
     { (yyval.node) = createIdentifier((yyvsp[(1) - (1)].string)); ;}
     break;
 
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 278 "cat.y"
+#line 285 "cat.y"
     { (yyval.node) = (yyvsp[(2) - (3)].node); ;}
     break;
 
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 282 "cat.y"
+#line 289 "cat.y"
     {
         (yyval.node) = createNode(NODE_FUNCTION);
         strncpy((yyval.node)->data.identifier.name, (yyvsp[(2) - (6)].string), MAX_ID_LENGTH - 1);
@@ -2042,7 +2049,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 291 "cat.y"
+#line 298 "cat.y"
     {
         int index = addSymbol((yyvsp[(2) - (2)].string), SYM_VARIABLE, TYPE_INT, currentScope);
         (yyval.node) = createNode(NODE_VARDECL);
@@ -2055,7 +2062,7 @@ yyreduce:
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 298 "cat.y"
+#line 305 "cat.y"
     {
         int index = addSymbol((yyvsp[(2) - (2)].string), SYM_VARIABLE, TYPE_FLOAT, currentScope);
         (yyval.node) = createNode(NODE_VARDECL);
@@ -2068,7 +2075,7 @@ yyreduce:
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 305 "cat.y"
+#line 312 "cat.y"
     {
         int index = addSymbol((yyvsp[(2) - (4)].string), SYM_VARIABLE, TYPE_FLOAT, currentScope);
         (yyval.node) = createNode(NODE_VARDECL);
@@ -2082,7 +2089,7 @@ yyreduce:
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 313 "cat.y"
+#line 320 "cat.y"
     {
         int index = addSymbol((yyvsp[(2) - (4)].string), SYM_VARIABLE, TYPE_INT, currentScope);
         (yyval.node) = createNode(NODE_VARDECL);
@@ -2097,7 +2104,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2101 "cat.tab.c"
+#line 2108 "cat.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2309,7 +2316,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 325 "cat.y"
+#line 332 "cat.y"
 
 
 int main(int argc, char **argv) {

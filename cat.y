@@ -159,35 +159,42 @@ import_statement
 
 switch_statement
     : TOKEN_SWITCH TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_LBRACE case_list TOKEN_RBRACE {
-        ASTNode *node = createNode(NODE_SWITCH);
-        node->data.control.condition = $3;
-        node->data.control.thenBranch = $6;
-        $$ = node;
+        $$ = createNode(NODE_SWITCH);
+        $$->data.control.condition = $3;
+        $$->data.control.thenBranch = $6;  // This points to the first case
+        $$->data.control.elseBranch = NULL;
+        printf("Created switch node\n");
     }
     ;
 
 case_list
     : case_statement                  { $$ = $1; }
     | case_list case_statement        {
-        ASTNode *node = $1;
-        while (node->next != NULL) node = node->next;
-        node->next = $2;
-        $$ = $1;
+        if ($1) {
+            ASTNode *last = $1;
+            while (last->data.control.elseBranch) {
+                last = last->data.control.elseBranch;
+            }
+            last->data.control.elseBranch = $2;
+            $$ = $1;
+        } else {
+            $$ = $2;
+        }
     }
     ;
 
 case_statement
     : TOKEN_CASE expression TOKEN_COLON statement_list {
-        ASTNode *node = createNode(NODE_CASE);
-        node->data.control.condition = $2;
-        node->data.control.thenBranch = $4;
-        $$ = node;
+        $$ = createNode(NODE_CASE);
+        $$->data.control.condition = $2;
+        $$->data.control.thenBranch = $4;
+        $$->data.control.elseBranch = NULL;
     }
     | TOKEN_DEFAULT TOKEN_COLON statement_list {
-        ASTNode *node = createNode(NODE_CASE);
-        node->data.control.condition = NULL;
-        node->data.control.thenBranch = $3;
-        $$ = node;
+        $$ = createNode(NODE_CASE);
+        $$->data.control.condition = NULL;
+        $$->data.control.thenBranch = $3;
+        $$->data.control.elseBranch = NULL;
     }
     ;
 if_statement

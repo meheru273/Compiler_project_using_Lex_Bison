@@ -66,8 +66,12 @@ extern FILE *yyin;
 [0-9]+\.[0-9]+          { yylval.floating = atof(yytext); return TOKEN_FLOAT_VALUE; }
 [a-zA-Z_][a-zA-Z0-9_]*  { yylval.string = strdup(yytext); return TOKEN_ID; }
 
-[%].*                   { /* Single line comment */ }
-[/][m][/][^/]*[/][m][/] { /* Multi-line comment */ }
+"$".*                    { /* Ignore single-line comments */ }
+
+"[$][$]comment[$][$]"([^$]|\$+[^$])*"[$][$]comment[$][$]" {
+    /* Ignore multi-line comments */
+}
+
 
 .                       { printf("Unknown character: %s\n", yytext); }
 

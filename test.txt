@@ -1,6 +1,9 @@
+$declaration and arithmatic operatons
 INT x;
 FLOAT y;
 x = 10;
+result = x + y * 2;   
+$if else statement
 IF (x > 5) {
     y = 3.14;
 } ELSE {
@@ -8,10 +11,11 @@ IF (x > 5) {
 }
 EXERT>(y);
 EXERT>("hello world");
+EXERT>(result);
 
 INT a = 5;
 EXERT>(a);
-
+$swtich statement
 SWITCH (X) {
     CASE 5:
         EXERT>("X IS 5");
@@ -22,3 +26,16 @@ SWITCH (X) {
     DEFAULT:
         EXERT>("X IS SOMETHING ELSE");
 }
+x=x*2;
+
+
+$function call
+FUNCTION add(INT a, INT b) {
+    INT result = a + b;
+    EXERT>(result);
+    EXERT>("Addition complete!");
+}
+
+INT x = 5;
+INT y = 3;
+add(x, y); 

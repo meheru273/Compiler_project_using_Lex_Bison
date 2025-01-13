@@ -254,6 +254,47 @@ void printAST(ASTNode *node, FILE *outFile) {
                 }
             }
             break;
+            case NODE_SWITCH:
+            fprintf(outFile, "Switch Statement:\n");
+            fprintf(outFile, "Condition:\n");
+            printAST(node->data.control.condition, outFile);
+            fprintf(outFile, "Cases:\n");
+            printAST(node->data.control.thenBranch, outFile);
+            break;
+            case NODE_CASE:
+            fprintf(outFile, "Case:\n");
+            if (node->data.control.condition) {
+                fprintf(outFile, "Case Value:\n");
+                printAST(node->data.control.condition, outFile);
+            } else {
+                fprintf(outFile, "Default Case\n");
+            }
+            fprintf(outFile, "Case Body:\n");
+            printAST(node->data.control.thenBranch, outFile);
+            if (node->data.control.elseBranch) {
+                printAST(node->data.control.elseBranch, outFile);
+            }
+            break;
+            case NODE_BREAK:
+            fprintf(outFile, "Break Statement\n");
+            break;
+            
+        case NODE_CALL:
+            fprintf(outFile, "Function Call: %s\n", node->data.call.name);
+            if (node->data.call.arguments) {
+                fprintf(outFile, "Arguments:\n");
+                for (int i = 0; i < node->data.call.argCount; i++) {
+                    printAST(node->data.call.arguments[i], outFile);
+                }
+            }
+            break;
+            case NODE_FUNCTION:
+            fprintf(outFile, "Function Declaration: %s\n", node->data.identifier.name);
+            if (node->data.control.thenBranch) {
+                fprintf(outFile, "Function Body:\n");
+                printAST(node->data.control.thenBranch, outFile);
+            }
+            break;
 
         default:
             fprintf(outFile, "Unhandled node type: %d\n", node->type);
