@@ -28,6 +28,8 @@ extern FILE *yyin;
 "IMPORT"                { return TOKEN_IMPORT; }
 "INSERT<"               { return TOKEN_INSERT; }
 "EXERT>"                { return TOKEN_EXERT; }
+"FOR"                   { return TOKEN_FOR; }
+"WHILE"                 { return TOKEN_WHILE; }
 
 "="                     { return TOKEN_ASSIGN; }
 "+"                     { return TOKEN_PLUS; }

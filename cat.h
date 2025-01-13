@@ -58,16 +58,18 @@ typedef enum {
     NODE_BREAK,
     NODE_EXERT,
     NODE_CALL_BLOCK,
+    NODE_FOR_LOOP,
+    NODE_WHILE_LOOP,
 } NodeType;
 
 
 // AST node structure
 typedef struct ASTNode {
-    NodeType type;
+    NodeType type;  // The type of the node (e.g., NODE_CONSTANT, NODE_IDENTIFIER, NODE_OPERATION, etc.)
     union {
         // For constants
         struct {
-            DataType dataType;
+            DataType dataType;  // Data type of the constant (e.g., int, float, string)
             union {
                 int intValue;
                 float floatValue;
@@ -75,47 +77,63 @@ typedef struct ASTNode {
             };
         } constant;
 
+        // For function call with block
         struct {
             struct ASTNode *call;   // The function call node
             struct ASTNode *block; // The associated block node
-        } callBlock; 
+        } callBlock;
 
         // For identifiers
         struct {
-            char name[MAX_ID_LENGTH];
-            int symbolIndex;
-            DataType dataType;  // Added this field to track the data type
+            char name[MAX_ID_LENGTH];  // Name of the identifier
+            int symbolIndex;           // Symbol table index
+            DataType dataType;         // Data type of the identifier
             union {
                 int intValue;
                 float floatValue;
-            } value; // To hold initialized value
-            int hasInitializer;           // Add this field
-            struct ASTNode *initializer;
+            } value;  // To hold initialized value
+            int hasInitializer;        // Indicates if the variable is initialized
+            struct ASTNode *initializer; // Initializer expression node
         } identifier;
 
         // For operators
         struct {
-            int operator;
-            struct ASTNode *left;
-            struct ASTNode *right;
+            int operator;              // Operator type (e.g., +, -, *, /)
+            struct ASTNode *left;      // Left operand
+            struct ASTNode *right;     // Right operand
         } operation;
 
         // For function calls
         struct {
-            char name[MAX_ID_LENGTH];
-            struct ASTNode **arguments;
-            int argCount;
+            char name[MAX_ID_LENGTH];  // Function name
+            struct ASTNode **arguments; // Array of argument nodes
+            int argCount;              // Number of arguments
         } call;
 
         // For control structures
         struct {
-            struct ASTNode *condition;
-            struct ASTNode *thenBranch;
-            struct ASTNode *elseBranch;
+            struct ASTNode *condition;   // Condition node (e.g., in if, while)
+            struct ASTNode *thenBranch; // Then-branch node
+            struct ASTNode *elseBranch; // Else-branch node (optional)
         } control;
+
+        // For for-loops
+        struct {
+            struct ASTNode *init;       // Initialization expression
+            struct ASTNode *condition; // Condition expression
+            struct ASTNode *increment; // Increment expression
+            struct ASTNode *body;      // Loop body
+        } forLoop;
+
+        // For while-loops
+        struct {
+            struct ASTNode *condition; // Condition expression
+            struct ASTNode *body;      // Loop body
+        } whileLoop;
+
     } data;
 
-    struct ASTNode *next;  // For statement lists
+    struct ASTNode *next;  // For linking nodes in statement lists or argument lists
 } ASTNode;
 
 // Symbol table
@@ -134,6 +152,20 @@ ASTNode *createUnaryOp(int operator, ASTNode *operand);
 ASTNode *createConstant(DataType type, ...);  // Uses varargs
 ASTNode *createIdentifier(const char *name);
 ASTNode *createNodeWithBlock(NodeType type, ASTNode *callNode, ASTNode *blockNode);
+void executeAST(ASTNode *node) ;
+void printSymbolTable() ;
+void evaluateBlock(ASTNode *node);
+void printWhileLoop(ASTNode *node, FILE *outFile) ;
+void printForLoop(ASTNode *node, FILE *outFile);
+void evaluateWhileLoop(ASTNode *node);
+ASTNode *createForLoop(ASTNode *init, ASTNode *condition, ASTNode *increment, ASTNode *body);
+void evaluateIfStatement(ASTNode *node);
+void evaluateForLoop(ASTNode *node);
+void evaluateSwitchStatement(ASTNode *node);
+ASTNode *createForLoopNode(ASTNode *init, ASTNode *condition, ASTNode *increment, ASTNode *body);
+ASTNode *createWhileLoopNode(ASTNode *condition, ASTNode *body);
+
+
 // Add this to cat.h
 float evaluateExpression(ASTNode *node);
 ASTNode *createConstantString(const char *value) ;

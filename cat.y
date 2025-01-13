@@ -22,26 +22,26 @@ extern int yydebug;
 
 
 /* Token declarations */
+/* Token declarations */
 %token TOKEN_IF TOKEN_ELSE TOKEN_ELIF TOKEN_SWITCH TOKEN_CASE
-%token TOKEN_DEFAULT TOKEN_BREAK TOKEN_FUNCTION TOKEN_INT TOKEN_FLOAT
-%token TOKEN_IMPORT TOKEN_INSERT TOKEN_EXERT
+%token TOKEN_DEFAULT TOKEN_BREAK TOKEN_FUNCTION TOKEN_FOR TOKEN_WHILE
+%token TOKEN_INT TOKEN_FLOAT TOKEN_IMPORT TOKEN_INSERT TOKEN_EXERT
 
 %token TOKEN_PLUS TOKEN_MINUS TOKEN_MULT TOKEN_DIV
 %token TOKEN_INCREMENT TOKEN_DECREMENT TOKEN_NOT TOKEN_COMP
 %token TOKEN_AND TOKEN_OR TOKEN_LOGICAL_NOT
 
 %token TOKEN_EQ TOKEN_NEQ TOKEN_GT TOKEN_LT TOKEN_GE TOKEN_LE
-%token TOKEN_ASSIGN TOKEN_PLUS_ASSIGN TOKEN_MINUS_ASSIGN TOKEN_MULT_ASSIGN TOKEN_DIV_ASSIGN
-%token TOKEN_SEMICOLON TOKEN_COLON TOKEN_LPAREN TOKEN_RPAREN TOKEN_LBRACE TOKEN_RBRACE
-%token TOKEN_COMMA
-%token TOKEN_BLOCK_START
+%token TOKEN_ASSIGN TOKEN_PLUS_ASSIGN TOKEN_MINUS_ASSIGN
+%token TOKEN_MULT_ASSIGN TOKEN_DIV_ASSIGN
 
+%token TOKEN_SEMICOLON TOKEN_COLON TOKEN_LPAREN TOKEN_RPAREN
+%token TOKEN_LBRACE TOKEN_RBRACE TOKEN_COMMA TOKEN_BLOCK_START
 
 %token <string> TOKEN_ID
 %token <integer> TOKEN_INT_VALUE
 %token <floating> TOKEN_FLOAT_VALUE
 %token <string> TOKEN_STRING_VALUE
-
 
 /* Type declarations for non-terminals */
 %type <node> program statement_list statement
@@ -52,7 +52,9 @@ extern int yydebug;
 %type <node> switch_statement case_list case_statement
 %type <node> declaration variable_declaration import_statement
 %type <node> function_call argument_list block
+%type <node> for_loop while_loop
 
+/* Operator precedence */
 %left TOKEN_ASSIGN
 %left TOKEN_OR
 %left TOKEN_AND
@@ -101,7 +103,10 @@ statement
         $$->data.control.condition = $2;
         printf("Parsed exert statement.\n");
     }
+    | for_loop                         { $$ = $1; printf("Parsed for loop statement.\n"); }
+    | while_loop                       { $$ = $1; printf("Parsed while loop statement.\n"); }
     ;
+
 
 
 
@@ -234,6 +239,21 @@ else_statement
     : TOKEN_ELSE block { $$ = $2; }
     | /* empty */ { $$ = NULL; }
     ;
+
+    for_loop:
+    TOKEN_FOR TOKEN_LPAREN expression TOKEN_SEMICOLON expression TOKEN_SEMICOLON expression TOKEN_RPAREN block {
+        $$ = createForLoopNode($3, $5, $7, $9);
+        printf("Parsed for loop.\n");
+    }
+;
+
+while_loop:
+    TOKEN_WHILE TOKEN_LPAREN expression TOKEN_RPAREN block {
+        $$ = createWhileLoopNode($3, $5);
+        printf("Parsed while loop.\n");
+    }
+;
+
 expression
     : assignment_expr           { $$ = $1; }
     ;

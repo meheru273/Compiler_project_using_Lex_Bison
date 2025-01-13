@@ -363,6 +363,143 @@ float evaluateExpression(ASTNode *node) {
     }
 }
 
+ASTNode *createForLoop(ASTNode *init, ASTNode *condition, ASTNode *increment, ASTNode *body) {
+    ASTNode *node = createNode(NODE_FOR_LOOP);
+    node->data.forLoop.init = init;
+    node->data.forLoop.condition = condition;
+    node->data.forLoop.increment = increment;
+    node->data.forLoop.body = body;
+    return node;
+}
+void evaluateWhileLoop(ASTNode *node) {
+    while (evaluateExpression(node->data.control.condition)) {
+        evaluateBlock(node->data.control.thenBranch); // Evaluate the body of the while loop
+    }
+}
+
+void printForLoop(ASTNode *node, FILE *outFile) {
+    fprintf(outFile, "For Loop:\n");
+    fprintf(outFile, "Initialization:\n");
+    printAST(node->data.forLoop.init, outFile);
+    fprintf(outFile, "Condition:\n");
+    printAST(node->data.forLoop.condition, outFile);
+    fprintf(outFile, "Increment:\n");
+    printAST(node->data.forLoop.increment, outFile);
+    fprintf(outFile, "Body:\n");
+    printAST(node->data.forLoop.body, outFile);
+}
+void printWhileLoop(ASTNode *node, FILE *outFile) {
+    fprintf(outFile, "While Loop:\n");
+    fprintf(outFile, "Condition:\n");
+    printAST(node->data.whileLoop.condition, outFile);
+    fprintf(outFile, "Body:\n");
+    printAST(node->data.whileLoop.body, outFile);
+}
+void evaluateBlock(ASTNode *node) {
+    while (node) {
+        switch (node->type) {
+            case NODE_VARDECL:
+            case NODE_ASSIGNMENT:
+                evaluateExpression(node);
+                break;
+            case NODE_IF:
+                evaluateIfStatement(node);
+                break;
+            case NODE_FOR_LOOP:
+                evaluateForLoop(node);
+                break;
+            case NODE_WHILE_LOOP:
+                evaluateWhileLoop(node);
+                break;
+            // Add more cases as needed
+            default:
+                fprintf(stderr, "Unknown statement in block\n");
+                break;
+        }
+        node = node->next;
+    }
+}
+void printSymbolTable() {
+    printf("Symbol Table:\n");
+    for (int i = 0; i < symbolCount; i++) {
+        printf("Name: %s, Type: %d, DataType: %d, Scope: %d, Initialized: %d\n",
+               symbolTable[i].name,
+               symbolTable[i].symType,
+               symbolTable[i].dataType,
+               symbolTable[i].scope,
+               symbolTable[i].initialized);
+    }
+}
+void executeAST(ASTNode *node) {
+    while (node) {
+        switch (node->type) {
+            case NODE_VARDECL:
+            case NODE_ASSIGNMENT:
+                evaluateExpression(node);
+                break;
+            case NODE_IF:
+                evaluateIfStatement(node);
+                break;
+            case NODE_FOR_LOOP:
+                evaluateForLoop(node);
+                break;
+            case NODE_WHILE_LOOP:
+                evaluateWhileLoop(node);
+                break;
+            case NODE_SWITCH:
+                evaluateSwitchStatement(node);
+                break;
+            // Add more cases as needed
+            default:
+                fprintf(stderr, "Unknown node type\n");
+                break;
+        }
+        node = node->next;
+    }
+}
+void evaluateIfStatement(ASTNode *node) {
+    if (evaluateExpression(node->data.control.condition)) {
+        evaluateBlock(node->data.control.thenBranch);
+    } else if (node->data.control.elseBranch) {
+        evaluateBlock(node->data.control.elseBranch);
+    }
+}
+void evaluateForLoop(ASTNode *node) {
+    // Evaluate initialization
+    evaluateExpression(node->data.control.thenBranch);
+    while (evaluateExpression(node->data.control.condition)) {
+        evaluateBlock(node->data.control.elseBranch); // Loop body
+        evaluateExpression(node->data.control.thenBranch->data.control.elseBranch); // Iteration
+    }
+}
+
+void evaluateSwitchStatement(ASTNode *node) {
+    ASTNode *caseNode = node->data.control.thenBranch;
+    while (caseNode) {
+        if (!caseNode->data.control.condition || 
+            evaluateExpression(caseNode->data.control.condition) == evaluateExpression(node->data.control.condition)) {
+            evaluateBlock(caseNode->data.control.thenBranch);
+            break;
+        }
+        caseNode = caseNode->data.control.elseBranch;
+    }
+}
+ASTNode *createForLoopNode(ASTNode *init, ASTNode *condition, ASTNode *increment, ASTNode *body) {
+    ASTNode *node = createNode(NODE_FOR_LOOP);
+    node->data.forLoop.init = init;
+    node->data.forLoop.condition = condition;
+    node->data.forLoop.increment = increment;
+    node->data.forLoop.body = body;
+    return node;
+}
+
+ASTNode *createWhileLoopNode(ASTNode *condition, ASTNode *body) {
+    ASTNode *node = createNode(NODE_WHILE_LOOP);
+    node->data.whileLoop.condition = condition;
+    node->data.whileLoop.body = body;
+    return node;
+}
+
 
 
 ASTNode *createConstantString(const char *value) {
