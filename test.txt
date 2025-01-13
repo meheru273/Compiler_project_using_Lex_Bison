@@ -7,3 +7,4 @@ IF (x > 5) {
     y = 0.0;
 }
 EXERT>(Y);
+EXERT>("hello world");

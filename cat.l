@@ -9,6 +9,12 @@ extern FILE *yyin;
 [ \t]                   { /* Ignore whitespace */ }
 \n                      { line_num++; }
 
+\"[^\"]*\"             { 
+    yylval.string = strdup(yytext); 
+    return TOKEN_STRING_VALUE; 
+}
+
+
 "INT"                   { return TOKEN_INT; }
 "FLOAT"                 { return TOKEN_FLOAT; }
 "IF"                    { return TOKEN_IF; }

@@ -80,10 +80,12 @@
      TOKEN_RPAREN = 296,
      TOKEN_LBRACE = 297,
      TOKEN_RBRACE = 298,
-     TOKEN_ID = 299,
-     TOKEN_INT_VALUE = 300,
-     TOKEN_FLOAT_VALUE = 301,
-     TOKEN_COMMA = 302
+     TOKEN_COMMA = 299,
+     TOKEN_BLOCK_START = 300,
+     TOKEN_ID = 301,
+     TOKEN_INT_VALUE = 302,
+     TOKEN_FLOAT_VALUE = 303,
+     TOKEN_STRING_VALUE = 304
    };
 #endif
 
@@ -104,7 +106,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 108 "cat.tab.h"
+#line 110 "cat.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

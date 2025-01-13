@@ -33,13 +33,14 @@ extern int yydebug;
 %token TOKEN_EQ TOKEN_NEQ TOKEN_GT TOKEN_LT TOKEN_GE TOKEN_LE
 %token TOKEN_ASSIGN TOKEN_PLUS_ASSIGN TOKEN_MINUS_ASSIGN TOKEN_MULT_ASSIGN TOKEN_DIV_ASSIGN
 %token TOKEN_SEMICOLON TOKEN_COLON TOKEN_LPAREN TOKEN_RPAREN TOKEN_LBRACE TOKEN_RBRACE
+%token TOKEN_COMMA
+%token TOKEN_BLOCK_START
+
 
 %token <string> TOKEN_ID
 %token <integer> TOKEN_INT_VALUE
 %token <floating> TOKEN_FLOAT_VALUE
-%token TOKEN_COMMA
-
-
+%token <string> TOKEN_STRING_VALUE
 
 
 /* Type declarations for non-terminals */
@@ -60,6 +61,7 @@ extern int yydebug;
 %left TOKEN_PLUS TOKEN_MINUS
 %left TOKEN_MULT TOKEN_DIV
 %right TOKEN_NOT
+%right TOKEN_ELSE
 
 %%
 
@@ -95,14 +97,13 @@ statement
     | block                            { $$ = $1; printf("Parsed block.\n"); }
     | function_call TOKEN_BLOCK_START block { $$ = createNodeWithBlock(NODE_CALL_BLOCK, $1, $3); }
     | TOKEN_EXERT TOKEN_LPAREN expression TOKEN_RPAREN TOKEN_SEMICOLON {
-          $$ = createNode(NODE_EXERT);
-          $$->data.control.condition = $3;
-      }
+        $$ = createNode(NODE_EXERT);
+        $$->data.control.condition = $3;
+        printf("Parsed exert statement.\n");
+        }
     ;
 
-if_statement
-    : TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN block else_statement
-    | TOKEN_IF TOKEN_LPAREN expression TOKEN_RPAREN block else_if_list else_statement %prec TOKEN_ELSE;
+
 
 parameter_list
     : parameter                        { $$ = $1; }
@@ -239,42 +240,40 @@ assignment_expr:
 
 
 logical_expr
-    : relational_expr
-    | logical_expr TOKEN_AND relational_expr { $$ = createBinaryOp(TOKEN_AND, $1, $3); }
-    | logical_expr TOKEN_OR relational_expr { $$ = createBinaryOp(TOKEN_OR, $1, $3); }
+    : relational_expr                              { $$ = $1; }
+    | logical_expr TOKEN_AND relational_expr       { $$ = createBinaryOp(TOKEN_AND, $1, $3); }
+    | logical_expr TOKEN_OR relational_expr        { $$ = createBinaryOp(TOKEN_OR, $1, $3); }
     ;
-
 
 relational_expr
-    : additive_expr
-    | relational_expr TOKEN_GT additive_expr { $$ = createBinaryOp(TOKEN_GT, $1, $3); }
-    | relational_expr TOKEN_LT additive_expr { $$ = createBinaryOp(TOKEN_LT, $1, $3); }
-    | relational_expr TOKEN_EQ additive_expr { $$ = createBinaryOp(TOKEN_EQ, $1, $3); }
-    | relational_expr TOKEN_NEQ additive_expr { $$ = createBinaryOp(TOKEN_NEQ, $1, $3); }
+    : additive_expr                               { $$ = $1; }
+    | relational_expr TOKEN_GT additive_expr      { $$ = createBinaryOp(TOKEN_GT, $1, $3); }
+    | relational_expr TOKEN_LT additive_expr      { $$ = createBinaryOp(TOKEN_LT, $1, $3); }
+    | relational_expr TOKEN_EQ additive_expr      { $$ = createBinaryOp(TOKEN_EQ, $1, $3); }
+    | relational_expr TOKEN_NEQ additive_expr     { $$ = createBinaryOp(TOKEN_NEQ, $1, $3); }
     ;
 
-
 additive_expr
-    : multiplicative_expr
-    | additive_expr TOKEN_PLUS multiplicative_expr { $$ = createBinaryOp(TOKEN_PLUS, $1, $3); }
+    : multiplicative_expr                         { $$ = $1; }
+    | additive_expr TOKEN_PLUS multiplicative_expr  { $$ = createBinaryOp(TOKEN_PLUS, $1, $3); }
     | additive_expr TOKEN_MINUS multiplicative_expr { $$ = createBinaryOp(TOKEN_MINUS, $1, $3); }
     ;
 
 multiplicative_expr
-    : unary_expr
-    | multiplicative_expr TOKEN_MULT unary_expr { $$ = createBinaryOp(TOKEN_MULT, $1, $3); }
-    | multiplicative_expr TOKEN_DIV unary_expr { $$ = createBinaryOp(TOKEN_DIV, $1, $3); }
+    : unary_expr                                 { $$ = $1; }
+    | multiplicative_expr TOKEN_MULT unary_expr  { $$ = createBinaryOp(TOKEN_MULT, $1, $3); }
+    | multiplicative_expr TOKEN_DIV unary_expr   { $$ = createBinaryOp(TOKEN_DIV, $1, $3); }
     ;
 
 unary_expr
-    : TOKEN_MINUS unary_expr { $$ = createUnaryOp(TOKEN_MINUS, $2); }
-    | primary_expr
+    : TOKEN_MINUS unary_expr                     { $$ = createUnaryOp(TOKEN_MINUS, $2); }
+    | primary_expr                               { $$ = $1; }
     ;
-
 
 primary_expr
     : TOKEN_INT_VALUE           { $$ = createConstant(TYPE_INT, $1); }
     | TOKEN_FLOAT_VALUE         { $$ = createConstant(TYPE_FLOAT, $1); }
+    | TOKEN_STRING_VALUE        { $$ = createConstantString($1); }
     | TOKEN_ID                  { $$ = createIdentifier($1); }
     | TOKEN_LPAREN expression TOKEN_RPAREN { $$ = $2; }
     ;

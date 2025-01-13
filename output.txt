@@ -1,0 +1,5 @@
+Parsing completed successfully.
+
+Generated Abstract Syntax Tree:
+0.00
+"hello world"

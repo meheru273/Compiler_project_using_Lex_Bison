@@ -149,28 +149,31 @@ void printAST(ASTNode *node, FILE *outFile) {
     if (!node) return;
 
     switch (node->type) {
-        case NODE_EXERT:
-            fprintf(outFile, "EXERT> ");
-            printAST(node->data.control.condition, outFile);
-            fprintf(outFile, "\n");
+        case NODE_EXERT: {
+            ASTNode *expr = node->data.control.condition;
+            if (expr->type == NODE_CONSTANT) {
+                // Handle string literals (you'll need to add string support to your lexer/parser)
+                if (expr->data.constant.dataType == TYPE_STRING) {
+                    fprintf(outFile, "%s\n", expr->data.constant.stringValue);
+                } else {
+                    // Handle numeric values
+                    float value = evaluateExpression(expr);
+                    fprintf(outFile, "%.2f\n", value);
+                }
+            } else {
+                // Handle variables and expressions
+                float value = evaluateExpression(expr);
+                fprintf(outFile, "%.2f\n", value);
+            }
             break;
-        case NODE_IDENTIFIER:
-            fprintf(outFile, "Identifier: %s\n", node->data.identifier.name);
-            break;
-        case NODE_CONSTANT:
-            if (node->data.constant.dataType == TYPE_INT)
-                fprintf(outFile, "Constant: %d\n", node->data.constant.intValue);
-            else
-                fprintf(outFile, "Constant: %f\n", node->data.constant.floatValue);
-            break;
-        // Add other cases...
+        }
+        // ... rest of the cases remain the same ...
     }
 
     if (node->next) {
         printAST(node->next, outFile);
     }
 }
-
 ASTNode *createNodeWithBlock(NodeType type, ASTNode *callNode, ASTNode *blockNode) {
     // Create a new AST node
     ASTNode *node = createNode(type);
@@ -188,7 +191,48 @@ ASTNode *createNodeWithBlock(NodeType type, ASTNode *callNode, ASTNode *blockNod
     return node;
 }
 
-
+float evaluateExpression(ASTNode *node) {
+    if (!node) return 0.0;
+    
+    float left, right;
+    
+    switch (node->type) {
+        case NODE_CONSTANT:
+            if (node->data.constant.dataType == TYPE_INT)
+                return (float)node->data.constant.intValue;
+            return node->data.constant.floatValue;
+            
+        case NODE_IDENTIFIER: {
+            int index = node->data.identifier.symbolIndex;
+            if (index >= 0) {
+                if (symbolTable[index].dataType == TYPE_INT)
+                    return (float)symbolTable[index].value.intValue;
+                return symbolTable[index].value.floatValue;
+            }
+            return 0.0;
+        }
+        
+        case NODE_BINARY_OP:
+            left = evaluateExpression(node->data.operation.left);
+            right = evaluateExpression(node->data.operation.right);
+            switch (node->data.operation.operator) {
+                case TOKEN_PLUS: return left + right;
+                case TOKEN_MINUS: return left - right;
+                case TOKEN_MULT: return left * right;
+                case TOKEN_DIV: return right != 0 ? left / right : 0;
+                default: return 0.0;
+            }
+            
+        default:
+            return 0.0;
+    }
+}
+ASTNode *createConstantString(const char *value) {
+    ASTNode *node = createNode(NODE_CONSTANT);
+    node->data.constant.dataType = TYPE_STRING;
+    node->data.constant.stringValue = strdup(value);
+    return node;
+}
 
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s at line %d, unexpected token: '%s'\n", s, line_num, yytext);

@@ -22,7 +22,8 @@ typedef enum {
 typedef enum {
     TYPE_INT,
     TYPE_FLOAT,
-    TYPE_VOID
+    TYPE_VOID,
+    TYPE_STRING,
 } DataType;
 
 // Symbol table entry
@@ -70,6 +71,7 @@ typedef struct ASTNode {
             union {
                 int intValue;
                 float floatValue;
+                char *stringValue;
             };
         } constant;
 
@@ -125,6 +127,10 @@ ASTNode *createUnaryOp(int operator, ASTNode *operand);
 ASTNode *createConstant(DataType type, ...);  // Uses varargs
 ASTNode *createIdentifier(const char *name);
 ASTNode *createNodeWithBlock(NodeType type, ASTNode *callNode, ASTNode *blockNode);
+// Add this to cat.h
+float evaluateExpression(ASTNode *node);
+ASTNode *createConstantString(const char *value) ;
+void printAST(ASTNode *node, FILE *outFile);
 void yyerror(const char *s);
 
 #endif // CAT_H
